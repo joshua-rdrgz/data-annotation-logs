@@ -1,0 +1,19 @@
+{
+  "properties": [
+    {
+      "name": "security.jwt.secret-key",
+      "type": "java.lang.String",
+      "description": "Secret value for signing JWT tokens"
+    },
+    {
+      "name": "security.jwt.expiration-time",
+      "type": "java.lang.String",
+      "description": "The amount of seconds before the JWT expires"
+    },
+    {
+      "name": "security.jwt.cookie-token-key",
+      "type": "java.lang.String",
+      "description": "What the cookie key containing the JWT is called."
+    }
+  ]
+}

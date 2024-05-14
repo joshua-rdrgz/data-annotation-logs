@@ -47,7 +47,7 @@ services:
     volumes:
       - type: bind
         source: ./api
-        target: /usr/src/app
+        target: /app
     profiles:
       - dev
 

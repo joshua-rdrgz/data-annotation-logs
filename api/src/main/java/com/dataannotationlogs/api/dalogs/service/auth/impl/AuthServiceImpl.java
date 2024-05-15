@@ -51,7 +51,8 @@ public class AuthServiceImpl implements AuthService {
         }
 
         var user = User.builder()
-                .name(entity.getName())
+                .firstName(entity.getFirstName())
+                .lastName(entity.getLastName())
                 .email(entity.getEmail())
                 .password(passwordEncoder.encode(entity.getPassword()))
                 .build();

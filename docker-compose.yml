@@ -10,6 +10,8 @@ services:
       - dataannotation-logs-app
     volumes:
       - db-dev-data:/var/lib/mysql
+    ports:
+      - 3306:3306
     profiles:
       - dev
 

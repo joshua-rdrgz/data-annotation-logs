@@ -16,6 +16,42 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 public class GlobalErrorHandler {
 
     @ExceptionHandler
+    public ResponseEntity<ErrorResponse> handleCouldNotVerifyUser(CouldNotVerifyUserException ex) {
+        System.out.println("❌ COULD NOT VERIFY USER: " + ex.getMessage());
+
+        ErrorResponse error = new ErrorResponse("Could not verify user, please try again later!",
+                HttpStatus.BAD_REQUEST.value());
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ErrorResponse> handleUnverifiedUser(UnverifiedUserException ex) {
+        System.out.println("🛑 UNVERIFIED USER: " + ex.getMessage());
+
+        ErrorResponse error = new ErrorResponse(ex.getMessage(),
+                HttpStatus.BAD_REQUEST.value());
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ErrorResponse> handleUserAlreadyVerified(UserAlreadyVerifiedException ex) {
+        System.out.println("⚠️ USER ALREADY VERIFIED: " + ex.getMessage());
+
+        ErrorResponse error = new ErrorResponse("Could not process request, please try again later.",
+                HttpStatus.BAD_REQUEST.value());
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
+        System.out.println("🚫 USER NOT FOUND: " + ex.getMessage());
+
+        ErrorResponse error = new ErrorResponse("Could not process request, please try again later.",
+                HttpStatus.BAD_REQUEST.value());
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex) {
         System.out.println("❌ BAD CREDENTIALS: " + ex.getMessage());
 

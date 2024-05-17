@@ -13,6 +13,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -39,7 +40,13 @@ public class User {
     private String email;
 
     @JsonIgnore
-    @Column(name = "password")
+    @Column(name = "password", nullable = false)
     private String password;
+
+    @Column(name = "verified")
+    private boolean verified;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
 }

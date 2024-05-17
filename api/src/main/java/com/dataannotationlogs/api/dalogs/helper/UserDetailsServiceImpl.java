@@ -1,7 +1,7 @@
 package com.dataannotationlogs.api.dalogs.helper;
 
 import com.dataannotationlogs.api.dalogs.entity.User;
-import com.dataannotationlogs.api.dalogs.repository.UserRepository;
+import com.dataannotationlogs.api.dalogs.repository.user.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -11,7 +11,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -31,8 +34,19 @@ public class AuthController {
     }
 
     @GetMapping("/logout")
-    public ResponseEntity<AuthResponse> logouEntity(HttpServletResponse response) {
+    public ResponseEntity<AuthResponse> logout(HttpServletResponse response) {
         return ResponseEntity.ok(authService.logout(response));
+    }
+
+    @PostMapping("/verify")
+    public ResponseEntity<AuthResponse> verifyAccount(@RequestParam String token,
+            @RequestParam UUID userId) {
+        return ResponseEntity.ok(authService.verifyAccount(token, userId));
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<AuthResponse> resendVerificationEmail(@RequestParam UUID userId) {
+        return ResponseEntity.ok(authService.resendVerificationEmail(userId));
     }
 
 }

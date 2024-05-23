@@ -11,9 +11,8 @@ export function useSignUp() {
   return useMutation({
     mutationFn: signup,
     mutationKey: ['auth', 'signup'],
-    onSuccess: (data) => {
-      toast.success(data.message);
-      navigate('/login');
+    onSuccess: () => {
+      navigate('/signup-success');
     },
     onError: (error: AxiosError<ErrorResponse>) => {
       toast.error(

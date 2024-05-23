@@ -17,6 +17,6 @@ public interface AuthService {
 
     AuthResponse verifyAccount(String token, UUID userId);
 
-    AuthResponse resendVerificationEmail(UUID userId);
+    AuthResponse resendVerificationEmail(String email);
 
 }

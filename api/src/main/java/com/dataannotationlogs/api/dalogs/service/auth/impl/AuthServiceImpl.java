@@ -151,32 +151,27 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public AuthResponse resendVerificationEmail(UUID userId) {
-        User user = userRepository.findFirstById(userId);
+    public AuthResponse resendVerificationEmail(String email) {
+        User user = userRepository.findByEmail(email);
 
-        if (user == null) {
-            throw new UserNotFoundException("User not found.");
+        if (user != null && !user.isVerified()) {
+            VerificationToken existingToken = verificationTokenRepository.findByUserId(user.getId());
+
+            if (existingToken != null) {
+                verificationTokenRepository.delete(existingToken);
+            }
+
+            Pair<VerificationToken, String> verificationTokenPair = createVerificationToken(user);
+            VerificationToken verificationToken = verificationTokenPair.getFirst();
+            String token = verificationTokenPair.getSecond();
+            verificationTokenRepository.save(verificationToken);
+
+            emailService.sendEmail(user.getEmail(), "Verify Your Account",
+                    createVerificationEmail(user, token));
         }
 
-        if (user.isVerified()) {
-            throw new UserAlreadyVerifiedException("User is already verified.");
-        }
-
-        VerificationToken existingToken = verificationTokenRepository.findByUserId(userId);
-
-        if (existingToken != null) {
-            verificationTokenRepository.delete(existingToken);
-        }
-
-        Pair<VerificationToken, String> verificationTokenPair = createVerificationToken(user);
-        VerificationToken verificationToken = verificationTokenPair.getFirst();
-        String token = verificationTokenPair.getSecond();
-        verificationTokenRepository.save(verificationToken);
-
-        emailService.sendEmail(user.getEmail(), "Verify Your Account",
-                createVerificationEmail(user, token));
-
-        return new AuthResponse("success", "Verification email resent successfully.");
+        return new AuthResponse("success",
+                "If the email is associated with an unverified account, a verification link has been sent.");
     }
 
     private Pair<VerificationToken, String> createVerificationToken(User user) {

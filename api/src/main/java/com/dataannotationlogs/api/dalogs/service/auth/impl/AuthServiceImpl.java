@@ -9,8 +9,6 @@ import com.dataannotationlogs.api.dalogs.exception.CouldNotVerifyUserException;
 import com.dataannotationlogs.api.dalogs.exception.InvalidInputException;
 import com.dataannotationlogs.api.dalogs.exception.UnverifiedUserException;
 import com.dataannotationlogs.api.dalogs.exception.UserAlreadyExistsException;
-import com.dataannotationlogs.api.dalogs.exception.UserAlreadyVerifiedException;
-import com.dataannotationlogs.api.dalogs.exception.UserNotFoundException;
 import com.dataannotationlogs.api.dalogs.repository.user.UserRepository;
 import com.dataannotationlogs.api.dalogs.repository.verification_token.VerificationTokenRepository;
 import com.dataannotationlogs.api.dalogs.service.auth.AuthService;

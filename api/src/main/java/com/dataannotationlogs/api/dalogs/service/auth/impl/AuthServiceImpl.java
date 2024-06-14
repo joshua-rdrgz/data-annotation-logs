@@ -32,6 +32,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
@@ -49,7 +50,6 @@ public class AuthServiceImpl implements AuthService {
     private String JWT_EXPIRATION_TIME;
 
     @Override
-    @Transactional
     public EntityChangeResponse register(RegisterAuthRequest entity) {
 
         if (entity.getEmail() == null || entity.getEmail().length() < 5) {
@@ -146,7 +146,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    @Transactional
     public EntityChangeResponse verifyAccount(String token, UUID userId) {
         VerificationToken verificationToken = verificationTokenRepository.findByUserId(userId);
 
@@ -167,7 +166,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    @Transactional
     public EntityChangeResponse resendVerificationEmail(String email) {
         User user = userRepository.findByEmail(email);
 

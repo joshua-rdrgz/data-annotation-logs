@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
@@ -34,7 +35,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public UserDTO updateCurrentUser(User user, UserDTO userDTO) {
         if (userDTO.getEmail() != null) {
             throw new IllegalArgumentException("This endpoint does not support updating emails.");
@@ -50,7 +50,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public EntityChangeResponse sendEmailResetToken(User user, EmailResetRequest emailReset) {
         User managedUser = userRepository.findFirstById(user.getId());
 
@@ -84,7 +83,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public EntityChangeResponse changeEmail(User user, EmailResetVerificationRequest emailResetVerification) {
         User managedUser = userRepository.findFirstById(user.getId());
 

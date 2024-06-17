@@ -23,12 +23,12 @@ jobs:
         run: npm install
         working-directory: ./client
 
-      - name: Cypress run
-        uses: cypress-io/github-action@v6
-        with:
-          build: npm run build
-          start: npm start
-          working-directory: ./client
+      - name: Start frontend server
+        run: npm run dev &
+        working-directory: ./client
+
+      - name: Wait for frontend server to be ready
+        run: npx wait-on http://localhost:5173
 
       - name: Check formatting
         run: npm run check:formatting
@@ -40,6 +40,10 @@ jobs:
 
       - name: Lint code
         run: npm run lint
+        working-directory: ./client
+
+      - name: Run tests
+        run: npm run cy:tests
         working-directory: ./client
 
   api:

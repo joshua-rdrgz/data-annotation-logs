@@ -1,0 +1,73 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  client:
+    name: Frontend Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./client
+
+      - name: Start frontend server
+        run: npm run dev &
+        working-directory: ./client
+
+      - name: Wait for frontend server to be ready
+        run: npx wait-on http://localhost:5173
+
+      - name: Check formatting
+        run: npm run check:formatting
+        working-directory: ./client
+
+      - name: Check types
+        run: npm run check:types
+        working-directory: ./client
+
+      - name: Lint code
+        run: npm run lint
+        working-directory: ./client
+
+      - name: Run tests
+        run: npm run cy:tests
+        working-directory: ./client
+
+  api:
+    name: Backend Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'adopt'
+          java-version: '17'
+
+      - name: Install dependencies
+        run: ./mvnw install -q -DskipTests -Dcheckstyle.skip
+        working-directory: ./api
+
+      - name: Run formatting
+        run: ./mvnw checkstyle:check
+        working-directory: ./api
+
+      - name: Run tests
+        run: ./mvnw test -q
+        working-directory: ./api

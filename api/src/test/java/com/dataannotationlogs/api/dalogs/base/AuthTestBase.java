@@ -9,41 +9,40 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+/** AuthTestBase. */
 @SpringBootTest
 public abstract class AuthTestBase extends EmailTestBase {
 
-    @Autowired
-    private UserRepository userRepository;
+  @Autowired private UserRepository userRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+  @Autowired private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private JwtService jwtService;
+  @Autowired private JwtService jwtService;
 
-    private User user;
-    private Cookie tokenCookie;
+  private User user;
+  private Cookie tokenCookie;
 
-    @BeforeEach
-    void initializeAuth() {
-        user = User.builder()
-                .firstName("John")
-                .lastName("Doe")
-                .email("john@example.com")
-                .password(passwordEncoder.encode("password"))
-                .verified(true)
-                .build();
-        user = userRepository.save(user);
+  @BeforeEach
+  void initializeAuth() {
+    user =
+        User.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .email("john@example.com")
+            .password(passwordEncoder.encode("password"))
+            .verified(true)
+            .build();
+    user = userRepository.save(user);
 
-        String jwtToken = jwtService.generateToken(user.getEmail());
-        tokenCookie = new Cookie("testtoken", jwtToken);
-    }
+    String jwtToken = jwtService.generateToken(user.getEmail());
+    tokenCookie = new Cookie("testtoken", jwtToken);
+  }
 
-    protected User getUser() {
-        return user;
-    }
+  protected User getUser() {
+    return user;
+  }
 
-    protected Cookie getTokenCookie() {
-        return tokenCookie;
-    }
+  protected Cookie getTokenCookie() {
+    return tokenCookie;
+  }
 }

@@ -18,7 +18,7 @@ export function useLogin() {
     },
     onError: (error: AxiosError<ErrorResponse>) => {
       toast.error(
-        error?.response?.data?.message || 'An error occurred during login.'
+        error?.response?.data?.message || 'An error occurred during login.',
       );
       console.error(error);
     },

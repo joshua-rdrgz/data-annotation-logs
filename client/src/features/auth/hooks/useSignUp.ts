@@ -17,7 +17,7 @@ export function useSignUp() {
     },
     onError: (error: AxiosError<ErrorResponse>) => {
       toast.error(
-        error?.response?.data?.message || 'An error occurred during signup.'
+        error?.response?.data?.message || 'An error occurred during signup.',
       );
       console.error(error);
     },

@@ -61,7 +61,7 @@ jobs:
           java-version: '17'
 
       - name: Install dependencies
-        run: ./mvnw install -q -DskipTests
+        run: ./mvnw install -q -DskipTests -Dcheckstyle.skip
         working-directory: ./api
 
       - name: Run formatting

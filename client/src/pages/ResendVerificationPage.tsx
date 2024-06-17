@@ -19,6 +19,7 @@ const ResendVerificationPage = () => {
     defaultValues: {
       email: '',
     },
+    mode: 'onChange',
   });
 
   const { mutate: resendVerification, isPending } = useResendVerification();
@@ -47,7 +48,10 @@ const ResendVerificationPage = () => {
               name='email'
               render={({ field }) => (
                 <F.Item>
-                  <F.Label>Email Address</F.Label>
+                  <div className='flex justify-between items-center flex-wrap'>
+                    <F.Label>Email Address</F.Label>
+                    <F.Message />
+                  </div>
                   <F.Control>
                     <Input
                       type='email'
@@ -55,7 +59,6 @@ const ResendVerificationPage = () => {
                       {...field}
                     />
                   </F.Control>
-                  <F.Message />
                 </F.Item>
               )}
             />

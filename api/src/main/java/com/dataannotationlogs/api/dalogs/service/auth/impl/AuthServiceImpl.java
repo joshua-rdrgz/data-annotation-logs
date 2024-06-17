@@ -1,8 +1,8 @@
 package com.dataannotationlogs.api.dalogs.service.auth.impl;
 
-import com.dataannotationlogs.api.dalogs.dto.auth.AuthResponse;
 import com.dataannotationlogs.api.dalogs.dto.auth.login.LoginAuthRequest;
 import com.dataannotationlogs.api.dalogs.dto.auth.register.RegisterAuthRequest;
+import com.dataannotationlogs.api.dalogs.dto.response.EntityChangeResponse;
 import com.dataannotationlogs.api.dalogs.entity.User;
 import com.dataannotationlogs.api.dalogs.entity.VerificationToken;
 import com.dataannotationlogs.api.dalogs.exception.CouldNotVerifyUserException;
@@ -19,9 +19,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.util.Pair;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +32,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
@@ -47,8 +50,7 @@ public class AuthServiceImpl implements AuthService {
     private String JWT_EXPIRATION_TIME;
 
     @Override
-    @Transactional
-    public AuthResponse register(RegisterAuthRequest entity) {
+    public EntityChangeResponse register(RegisterAuthRequest entity) {
 
         if (entity.getEmail() == null || entity.getEmail().length() < 5) {
             throw new InvalidInputException("Email must be present.  Please add one.");
@@ -70,7 +72,6 @@ public class AuthServiceImpl implements AuthService {
                 .email(entity.getEmail())
                 .password(passwordEncoder.encode(entity.getPassword()))
                 .verified(false)
-                .createdAt(LocalDateTime.now())
                 .build();
         userRepository.save(user);
 
@@ -85,11 +86,15 @@ public class AuthServiceImpl implements AuthService {
         emailService.sendEmail(user.getEmail(), "Verify Your Account",
                 createVerificationEmail(user, token));
 
-        return new AuthResponse("success", "User created, please log in!");
+        return EntityChangeResponse.builder()
+                .statusCode(HttpStatusCode.valueOf(201))
+                .status("success")
+                .message("User created, please verify account!")
+                .build();
     }
 
     @Override
-    public AuthResponse login(LoginAuthRequest entity, HttpServletResponse response) {
+    public EntityChangeResponse login(LoginAuthRequest entity, HttpServletResponse response) {
         // 1. Authenticate User
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -114,11 +119,15 @@ public class AuthServiceImpl implements AuthService {
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-        return new AuthResponse("success", "Successfully logged in.");
+        return EntityChangeResponse.builder()
+                .statusCode(HttpStatusCode.valueOf(200))
+                .status("success")
+                .message("Successfully logged in.")
+                .build();
     }
 
     @Override
-    public AuthResponse logout(HttpServletResponse response) {
+    public EntityChangeResponse logout(HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie.from(TOKEN_KEY, null)
                 .httpOnly(true)
                 .secure(false)
@@ -127,12 +136,17 @@ public class AuthServiceImpl implements AuthService {
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-        return new AuthResponse("success", "Successfully logged out.");
+        SecurityContextHolder.clearContext();
+
+        return EntityChangeResponse.builder()
+                .statusCode(HttpStatusCode.valueOf(200))
+                .status("success")
+                .message("Successfully logged out.")
+                .build();
     }
 
     @Override
-    @Transactional
-    public AuthResponse verifyAccount(String token, UUID userId) {
+    public EntityChangeResponse verifyAccount(String token, UUID userId) {
         VerificationToken verificationToken = verificationTokenRepository.findByUserId(userId);
 
         if (verificationToken == null
@@ -144,12 +158,15 @@ public class AuthServiceImpl implements AuthService {
 
         userRepository.verifyUser(userId);
 
-        return new AuthResponse("success", "Account verified successfully.");
+        return EntityChangeResponse.builder()
+                .statusCode(HttpStatusCode.valueOf(200))
+                .status("success")
+                .message("Account verified successfully.")
+                .build();
     }
 
     @Override
-    @Transactional
-    public AuthResponse resendVerificationEmail(String email) {
+    public EntityChangeResponse resendVerificationEmail(String email) {
         User user = userRepository.findByEmail(email);
 
         if (user != null && !user.isVerified()) {
@@ -168,8 +185,11 @@ public class AuthServiceImpl implements AuthService {
                     createVerificationEmail(user, token));
         }
 
-        return new AuthResponse("success",
-                "If the email is associated with an unverified account, a verification link has been sent.");
+        return EntityChangeResponse.builder()
+                .statusCode(HttpStatusCode.valueOf(200))
+                .status("success")
+                .message("If the email is associated with an unverified account, a verification link has been sent.")
+                .build();
     }
 
     private Pair<VerificationToken, String> createVerificationToken(User user) {

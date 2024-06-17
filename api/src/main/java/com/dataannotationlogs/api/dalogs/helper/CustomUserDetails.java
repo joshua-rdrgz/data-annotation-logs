@@ -9,14 +9,12 @@ import java.util.Collection;
 
 public class CustomUserDetails extends User implements UserDetails {
 
-    private String username;
-    private String password;
-    Collection<? extends GrantedAuthority> authorities;
+    private Collection<? extends GrantedAuthority> authorities;
 
     public CustomUserDetails(User user) {
-        this.username = user.getEmail();
-        this.password = user.getPassword();
-        this.authorities = new ArrayList<GrantedAuthority>();
+        super(user.getId(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getPassword(),
+                user.isVerified(), user.getCreatedAt(), user.getLastUpdatedAt());
+        this.authorities = new ArrayList<>();
     }
 
     @Override
@@ -26,12 +24,12 @@ public class CustomUserDetails extends User implements UserDetails {
 
     @Override
     public String getPassword() {
-        return password;
+        return super.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return username;
+        return super.getEmail();
     }
 
     @Override

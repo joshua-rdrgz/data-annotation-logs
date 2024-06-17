@@ -16,6 +16,14 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 public class GlobalErrorHandler {
 
     @ExceptionHandler
+    public ResponseEntity<ErrorResponse> handleIllegalArguments(IllegalArgumentException ex) {
+        System.out.println("👮🏽‍♀️ ILLEGAL ARGUMENT EXCEPTION: " + ex.getMessage());
+
+        ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleCouldNotVerifyUser(CouldNotVerifyUserException ex) {
         System.out.println("❌ COULD NOT VERIFY USER: " + ex.getMessage());
 

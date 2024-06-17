@@ -1,3 +1,4 @@
+import { ClientRoutes } from '@/config/router';
 import { useVerifyUser } from '@/features/auth/hooks/useVerifyUser';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -16,7 +17,7 @@ export const VerifyPage = () => {
   useEffect(() => {
     if (!token || !userId) {
       toast.error('Invalid verification link.');
-      navigate('/resend-verification', { replace: true });
+      navigate(ClientRoutes.RESEND_VERIFICATION, { replace: true });
       return;
     }
 
@@ -30,11 +31,11 @@ export const VerifyPage = () => {
         {
           onSuccess: () => {
             toast.success('Account verified successfully.');
-            navigate('/login', { replace: true });
+            navigate(ClientRoutes.LOGIN, { replace: true });
           },
           onError: () => {
             toast.error('Failed to verify account.');
-            navigate('/resend-verification', { replace: true });
+            navigate(ClientRoutes.RESEND_VERIFICATION, { replace: true });
           },
         }
       );

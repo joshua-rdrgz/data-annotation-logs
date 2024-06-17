@@ -1,9 +1,11 @@
-package com.dataannotationlogs.api.dataannotationlogsapi;
+package com.dataannotationlogs.api.dalogs;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
+@ActiveProfiles("test")
 class DALogsApplicationTests {
 
     @Test

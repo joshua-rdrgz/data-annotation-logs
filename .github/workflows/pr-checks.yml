@@ -24,7 +24,7 @@ jobs:
         working-directory: ./client
 
       - name: Start frontend server
-        run: npm start &
+        run: npm run build & npm run preview
         working-directory: ./client
 
       - name: Wait for frontend server to be ready
@@ -61,9 +61,9 @@ jobs:
           java-version: '17'
 
       - name: Install dependencies
-        run: ./mvnw install
+        run: ./mvnw install -q
         working-directory: ./api
 
       - name: Run tests
-        run: ./mvnw test
+        run: ./mvnw test -q
         working-directory: ./api

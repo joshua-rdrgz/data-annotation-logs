@@ -64,6 +64,10 @@ jobs:
         run: ./mvnw install -q -DskipTests
         working-directory: ./api
 
+      - name: Run formatting
+        run: ./mvnw checkstyle:check
+        working-directory: ./api
+
       - name: Run tests
         run: ./mvnw test -q
         working-directory: ./api

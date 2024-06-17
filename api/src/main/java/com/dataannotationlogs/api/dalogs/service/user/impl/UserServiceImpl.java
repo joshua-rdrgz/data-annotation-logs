@@ -3,7 +3,7 @@ package com.dataannotationlogs.api.dalogs.service.user.impl;
 import com.dataannotationlogs.api.dalogs.dto.email.EmailResetRequest;
 import com.dataannotationlogs.api.dalogs.dto.email.EmailResetVerificationRequest;
 import com.dataannotationlogs.api.dalogs.dto.response.EntityChangeResponse;
-import com.dataannotationlogs.api.dalogs.dto.user.UserDTO;
+import com.dataannotationlogs.api.dalogs.dto.user.UserDto;
 import com.dataannotationlogs.api.dalogs.entity.EmailResetToken;
 import com.dataannotationlogs.api.dalogs.entity.User;
 import com.dataannotationlogs.api.dalogs.repository.emailresettoken.EmailResetTokenRepository;
@@ -30,12 +30,12 @@ public class UserServiceImpl implements UserService {
   private final PasswordEncoder passwordEncoder;
 
   @Override
-  public UserDTO getCurrentUser(User user) {
-    return UserDTO.fromUser(user);
+  public UserDto getCurrentUser(User user) {
+    return UserDto.fromUser(user);
   }
 
   @Override
-  public UserDTO updateCurrentUser(User user, UserDTO userDto) {
+  public UserDto updateCurrentUser(User user, UserDto userDto) {
     if (userDto.getEmail() != null) {
       throw new IllegalArgumentException("This endpoint does not support updating emails.");
     }
@@ -46,7 +46,7 @@ public class UserServiceImpl implements UserService {
 
     User updatedUser = userRepository.save(managedUser);
 
-    return UserDTO.fromUser(updatedUser);
+    return UserDto.fromUser(updatedUser);
   }
 
   @Override

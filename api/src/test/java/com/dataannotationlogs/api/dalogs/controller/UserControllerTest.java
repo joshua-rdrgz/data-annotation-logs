@@ -8,7 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.dataannotationlogs.api.dalogs.base.AuthTestBase;
 import com.dataannotationlogs.api.dalogs.dto.email.EmailResetRequest;
 import com.dataannotationlogs.api.dalogs.dto.email.EmailResetVerificationRequest;
-import com.dataannotationlogs.api.dalogs.dto.user.UserDTO;
+import com.dataannotationlogs.api.dalogs.dto.user.UserDto;
 import com.dataannotationlogs.api.dalogs.entity.EmailResetToken;
 import com.dataannotationlogs.api.dalogs.entity.User;
 import com.dataannotationlogs.api.dalogs.repository.emailresettoken.EmailResetTokenRepository;
@@ -51,8 +51,8 @@ class UserControllerTest extends AuthTestBase {
             .andExpect(status().isOk())
             .andReturn();
 
-    UserDTO userDto =
-        objectMapper.readValue(result.getResponse().getContentAsString(), UserDTO.class);
+    UserDto userDto =
+        objectMapper.readValue(result.getResponse().getContentAsString(), UserDto.class);
     assertEquals(getUser().getFirstName(), userDto.getFirstName());
     assertEquals(getUser().getLastName(), userDto.getLastName());
     assertEquals(getUser().getEmail(), userDto.getEmail());
@@ -61,7 +61,7 @@ class UserControllerTest extends AuthTestBase {
   /** Test that the PUT /me endpoint updates the user information correctly. */
   @Test
   void updateCurrentUser_whenLoggedIn_shouldUpdateUser() throws Exception {
-    UserDTO userDto = UserDTO.builder().firstName("Jane").lastName("Doe").build();
+    UserDto userDto = UserDto.builder().firstName("Jane").lastName("Doe").build();
 
     MvcResult result =
         mockMvc
@@ -73,8 +73,8 @@ class UserControllerTest extends AuthTestBase {
             .andExpect(status().isOk())
             .andReturn();
 
-    UserDTO updatedUserDto =
-        objectMapper.readValue(result.getResponse().getContentAsString(), UserDTO.class);
+    UserDto updatedUserDto =
+        objectMapper.readValue(result.getResponse().getContentAsString(), UserDto.class);
     assertEquals(userDto.getFirstName(), updatedUserDto.getFirstName());
     assertEquals(userDto.getLastName(), updatedUserDto.getLastName());
   }
@@ -82,7 +82,7 @@ class UserControllerTest extends AuthTestBase {
   /** Test that the PUT /me endpoint does not update the email. */
   @Test
   void updateCurrentUser_whenEmailIsProvided_shouldNotUpdateEmail() throws Exception {
-    UserDTO userDto = UserDTO.builder().email("jane@example.com").build();
+    UserDto userDto = UserDto.builder().email("jane@example.com").build();
 
     mockMvc
         .perform(

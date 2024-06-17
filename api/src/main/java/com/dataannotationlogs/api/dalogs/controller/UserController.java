@@ -3,7 +3,7 @@ package com.dataannotationlogs.api.dalogs.controller;
 import com.dataannotationlogs.api.dalogs.dto.email.EmailResetRequest;
 import com.dataannotationlogs.api.dalogs.dto.email.EmailResetVerificationRequest;
 import com.dataannotationlogs.api.dalogs.dto.response.EntityChangeResponse;
-import com.dataannotationlogs.api.dalogs.dto.user.UserDTO;
+import com.dataannotationlogs.api.dalogs.dto.user.UserDto;
 import com.dataannotationlogs.api.dalogs.entity.User;
 import com.dataannotationlogs.api.dalogs.service.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -24,13 +24,13 @@ public class UserController {
   private final UserService userService;
 
   @GetMapping("/me")
-  public ResponseEntity<UserDTO> getCurrentUser(@AuthenticationPrincipal User user) {
+  public ResponseEntity<UserDto> getCurrentUser(@AuthenticationPrincipal User user) {
     return ResponseEntity.ok(userService.getCurrentUser(user));
   }
 
   @PutMapping("/me")
-  public ResponseEntity<UserDTO> updateCurrentUser(
-      @AuthenticationPrincipal User user, @RequestBody UserDTO userDto) {
+  public ResponseEntity<UserDto> updateCurrentUser(
+      @AuthenticationPrincipal User user, @RequestBody UserDto userDto) {
     return ResponseEntity.ok(userService.updateCurrentUser(user, userDto));
   }
 

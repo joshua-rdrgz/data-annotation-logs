@@ -8,32 +8,33 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
+/** EmailTestBase. */
 @SpringBootTest
 public abstract class EmailTestBase {
 
-    protected GreenMail greenMail;
+  protected GreenMail greenMail;
 
-    @Autowired
-    private JavaMailSenderImpl mailSender;
+  @Autowired private JavaMailSenderImpl mailSender;
 
-    @BeforeEach
-    public void initializeEmail() {
-        greenMail = new GreenMail(ServerSetupTest.SMTP);
-        greenMail.setUser("test@example.com", "password");
-        greenMail.start();
+  /** initializeEmail. */
+  @BeforeEach
+  public void initializeEmail() {
+    greenMail = new GreenMail(ServerSetupTest.SMTP);
+    greenMail.setUser("test@example.com", "password");
+    greenMail.start();
 
-        // Configure JavaMailSender for GreenMail
-        mailSender.setHost("localhost");
-        mailSender.setPort(greenMail.getSmtp().getPort());
-        mailSender.setUsername("test@example.com");
-        mailSender.setPassword("password");
+    // Configure JavaMailSender for GreenMail
+    mailSender.setHost("localhost");
+    mailSender.setPort(greenMail.getSmtp().getPort());
+    mailSender.setUsername("test@example.com");
+    mailSender.setPassword("password");
 
-        // Enable authentication
-        mailSender.getJavaMailProperties().setProperty("mail.smtp.auth", "true");
-    }
+    // Enable authentication
+    mailSender.getJavaMailProperties().setProperty("mail.smtp.auth", "true");
+  }
 
-    @AfterEach
-    public void tearDownEmail() {
-        greenMail.stop();
-    }
+  @AfterEach
+  public void tearDownEmail() {
+    greenMail.stop();
+  }
 }

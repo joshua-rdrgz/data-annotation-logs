@@ -1,22 +1,21 @@
 package com.dataannotationlogs.api.dalogs.repository.user;
 
 import com.dataannotationlogs.api.dalogs.entity.User;
-
 import java.util.List;
 import java.util.UUID;
 
+/** UserRepository. */
 public interface UserRepository {
 
-    User save(User user);
+  User save(User user);
 
-    User findByEmail(String email);
+  User findByEmail(String email);
 
-    User findFirstById(UUID id);
+  User findFirstById(UUID id);
 
-    void verifyUser(UUID userId);
+  void verifyUser(UUID userId);
 
-    List<User> findUnverifiedUsers();
+  List<User> findUnverifiedUsers();
 
-    void delete(User user);
-
+  void delete(User user);
 }

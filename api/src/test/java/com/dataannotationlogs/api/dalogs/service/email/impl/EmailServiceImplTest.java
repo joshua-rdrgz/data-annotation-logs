@@ -33,4 +33,10 @@ public class EmailServiceImplTest extends EmailTestBase {
         assertThat(receivedMessage.getAllRecipients()[0].toString()).isEqualTo(to);
         assertThat(receivedMessage.getContent().toString().trim()).contains(content);
     }
+
+    // Test to make sure backend identifies if tests fail
+    @Test
+    public void testTestFailure() {
+        assertThat(true).isFalse();
+    }
 }

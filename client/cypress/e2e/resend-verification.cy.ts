@@ -47,7 +47,7 @@ describe('Resend Verification Page', () => {
 
     // Assert success message
     cy.contains(
-      'If the email is associated with an unverified account, a verification link has been sent.'
+      'If the email is associated with an unverified account, a verification link has been sent.',
     ).should('be.visible');
   });
 });

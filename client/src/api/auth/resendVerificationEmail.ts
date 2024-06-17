@@ -6,7 +6,7 @@ export interface ResendVerificationEmailResponse {
 }
 
 export async function resendVerificationEmail(
-  email: string
+  email: string,
 ): Promise<ResendVerificationEmailResponse> {
   const response = await request({
     method: 'POST',

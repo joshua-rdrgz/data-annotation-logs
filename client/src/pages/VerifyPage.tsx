@@ -37,7 +37,7 @@ export const VerifyPage = () => {
             toast.error('Failed to verify account.');
             navigate(ClientRoutes.RESEND_VERIFICATION, { replace: true });
           },
-        }
+        },
       );
     }
   }, [verifyUser, token, userId, navigate, hasRan]);

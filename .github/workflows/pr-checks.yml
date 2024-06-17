@@ -61,7 +61,7 @@ jobs:
           java-version: '17'
 
       - name: Install dependencies
-        run: ./mvnw install -q
+        run: ./mvnw install -q -DskipTests
         working-directory: ./api
 
       - name: Run tests

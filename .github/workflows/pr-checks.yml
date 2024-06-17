@@ -24,7 +24,7 @@ jobs:
         working-directory: ./client
 
       - name: Start frontend server
-        run: npm run build & npm run preview
+        run: npm run dev &
         working-directory: ./client
 
       - name: Wait for frontend server to be ready

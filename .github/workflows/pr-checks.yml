@@ -23,6 +23,13 @@ jobs:
         run: npm install
         working-directory: ./client
 
+      - name: Start frontend server
+        run: npm start &
+        working-directory: ./client
+
+      - name: Wait for frontend server to be ready
+        run: npx wait-on http://localhost:5173
+
       - name: Check formatting
         run: npm run check:formatting
         working-directory: ./client

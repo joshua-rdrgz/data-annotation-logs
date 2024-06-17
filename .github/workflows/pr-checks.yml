@@ -28,6 +28,7 @@ jobs:
         with:
           build: npm run build
           start: npm start
+          working-directory: ./client
 
       - name: Check formatting
         run: npm run check:formatting

@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "check:formatting": "prettier --check .",
     "format": "prettier --write .",
-    "check:types": "tsc --noEmit"
+    "check:types": "tsc --noEmit",
+    "cy:tests": "cypress run --browser chrome"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",

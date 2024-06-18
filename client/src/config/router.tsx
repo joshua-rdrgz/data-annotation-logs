@@ -4,6 +4,7 @@ import { LoginPage } from '@/pages/LoginPage';
 import { ResendVerificationPage } from '@/pages/ResendVerificationPage';
 import { SignUpPage } from '@/pages/SignUpPage';
 import { SignUpSuccessPage } from '@/pages/SignUpSuccessPage';
+import { UserSettings } from '@/pages/UserSettings';
 import { VerifyPage } from '@/pages/VerifyPage';
 import { RouteObject, redirect } from 'react-router-dom';
 
@@ -16,6 +17,7 @@ export enum ClientRoutes {
   DASHBOARD = '/app/dashboard',
   CURRENT_SESSION = '/app/current-session',
   MY_SESSIONS = '/app/my-sessions',
+  USER_SETTINGS = '/app/settings',
 }
 
 export const routerConfig: RouteObject[] = [
@@ -62,6 +64,10 @@ export const routerConfig: RouteObject[] = [
           {
             path: 'my-sessions',
             element: <div>My Sessions Page</div>,
+          },
+          {
+            path: 'settings',
+            element: <UserSettings />,
           },
         ],
       },

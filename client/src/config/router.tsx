@@ -14,6 +14,8 @@ export enum ClientRoutes {
   VERIFY = '/verify',
   RESEND_VERIFICATION = '/resend-verification',
   DASHBOARD = '/app/dashboard',
+  CURRENT_SESSION = '/app/current-session',
+  MY_SESSIONS = '/app/my-sessions',
 }
 
 export const routerConfig: RouteObject[] = [
@@ -52,6 +54,14 @@ export const routerConfig: RouteObject[] = [
           {
             path: 'dashboard',
             element: <div>dashboard, you made it!</div>,
+          },
+          {
+            path: 'current-session',
+            element: <div>Current Session Page</div>,
+          },
+          {
+            path: 'my-sessions',
+            element: <div>My Sessions Page</div>,
           },
         ],
       },

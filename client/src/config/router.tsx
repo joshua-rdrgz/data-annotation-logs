@@ -4,7 +4,7 @@ import { LoginPage } from '@/pages/LoginPage';
 import { ResendVerificationPage } from '@/pages/ResendVerificationPage';
 import { SignUpPage } from '@/pages/SignUpPage';
 import { SignUpSuccessPage } from '@/pages/SignUpSuccessPage';
-import { UserSettings } from '@/pages/UserSettings';
+import { UserSettingsPage } from '@/pages/UserSettingsPage';
 import { VerifyPage } from '@/pages/VerifyPage';
 import { RouteObject, redirect } from 'react-router-dom';
 
@@ -67,7 +67,7 @@ export const routerConfig: RouteObject[] = [
           },
           {
             path: 'settings',
-            element: <UserSettings />,
+            element: <UserSettingsPage />,
           },
         ],
       },

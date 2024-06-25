@@ -1,6 +1,6 @@
 import { BaseUserSettingsForm } from '@/features/user/BaseUserSettingsForm';
 
-export const UserSettings = () => {
+export const UserSettingsPage = () => {
   return (
     <div className='flex justify-center'>
       <BaseUserSettingsForm />

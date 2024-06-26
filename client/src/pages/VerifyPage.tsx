@@ -12,6 +12,8 @@ export const VerifyPage = () => {
   const userId = searchParams.get('userId');
 
   const { mutate: verifyUser } = useVerifyUser();
+
+  // Prevents Development Environment from making duplicate requests
   const [hasRan, setHasRan] = useState(false);
 
   useEffect(() => {

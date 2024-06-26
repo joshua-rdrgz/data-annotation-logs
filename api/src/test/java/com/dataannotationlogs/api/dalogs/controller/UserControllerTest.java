@@ -58,6 +58,52 @@ class UserControllerTest extends AuthTestBase {
     assertEquals(getUser().getEmail(), userDto.getEmail());
   }
 
+  @Test
+  void getCurrentUser_whenEmailResetTokenExists_shouldReturnUserWithPendingChange()
+      throws Exception {
+    String newEmail = "newemail@example.com";
+    EmailResetToken emailResetToken =
+        EmailResetToken.builder()
+            .user(getUser())
+            .token(passwordEncoder.encode("token"))
+            .newEmail(newEmail)
+            .expiryDate(LocalDateTime.now().plusMinutes(30))
+            .build();
+    emailResetTokenRepository.save(emailResetToken);
+
+    MvcResult result =
+        mockMvc
+            .perform(get("/api/v1/users/me").cookie(getTokenCookie()))
+            .andExpect(status().isOk())
+            .andReturn();
+
+    UserDto userDto =
+        objectMapper.readValue(result.getResponse().getContentAsString(), UserDto.class);
+    assertEquals(getUser().getFirstName(), userDto.getFirstName());
+    assertEquals(getUser().getLastName(), userDto.getLastName());
+    assertEquals(getUser().getEmail(), userDto.getEmail());
+    assertEquals(true, userDto.isPendingEmailChange());
+    assertEquals(newEmail, userDto.getPendingEmail());
+  }
+
+  @Test
+  void getCurrentUser_whenNoEmailResetTokenExists_shouldReturnUserWithoutPendingChange()
+      throws Exception {
+    MvcResult result =
+        mockMvc
+            .perform(get("/api/v1/users/me").cookie(getTokenCookie()))
+            .andExpect(status().isOk())
+            .andReturn();
+
+    UserDto userDto =
+        objectMapper.readValue(result.getResponse().getContentAsString(), UserDto.class);
+    assertEquals(getUser().getFirstName(), userDto.getFirstName());
+    assertEquals(getUser().getLastName(), userDto.getLastName());
+    assertEquals(getUser().getEmail(), userDto.getEmail());
+    assertEquals(false, userDto.isPendingEmailChange());
+    assertEquals(null, userDto.getPendingEmail());
+  }
+
   /** Test that the PUT /me endpoint updates the user information correctly. */
   @Test
   void updateCurrentUser_whenLoggedIn_shouldUpdateUser() throws Exception {
@@ -91,6 +137,62 @@ class UserControllerTest extends AuthTestBase {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(userDto)))
         .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void updateCurrentUser_whenNoEmailResetTokenExists_shouldReturnUserWithoutPendingChange()
+      throws Exception {
+    UserDto userDto = UserDto.builder().firstName("Jane").lastName("Doe").build();
+
+    MvcResult result =
+        mockMvc
+            .perform(
+                put("/api/v1/users/me")
+                    .cookie(getTokenCookie())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(userDto)))
+            .andExpect(status().isOk())
+            .andReturn();
+
+    UserDto updatedUserDto =
+        objectMapper.readValue(result.getResponse().getContentAsString(), UserDto.class);
+    assertEquals(userDto.getFirstName(), updatedUserDto.getFirstName());
+    assertEquals(userDto.getLastName(), updatedUserDto.getLastName());
+    assertEquals(false, updatedUserDto.isPendingEmailChange());
+    assertEquals(null, updatedUserDto.getPendingEmail());
+  }
+
+  @Test
+  void updateCurrentUser_whenEmailResetTokenExists_shouldReturnUserWithPendingChange()
+      throws Exception {
+    String newEmail = "newemail@example.com";
+    EmailResetToken emailResetToken =
+        EmailResetToken.builder()
+            .user(getUser())
+            .token(passwordEncoder.encode("token"))
+            .newEmail(newEmail)
+            .expiryDate(LocalDateTime.now().plusMinutes(30))
+            .build();
+    emailResetTokenRepository.save(emailResetToken);
+
+    UserDto userDto = UserDto.builder().firstName("Jane").lastName("Doe").build();
+
+    MvcResult result =
+        mockMvc
+            .perform(
+                put("/api/v1/users/me")
+                    .cookie(getTokenCookie())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(userDto)))
+            .andExpect(status().isOk())
+            .andReturn();
+
+    UserDto updatedUserDto =
+        objectMapper.readValue(result.getResponse().getContentAsString(), UserDto.class);
+    assertEquals(userDto.getFirstName(), updatedUserDto.getFirstName());
+    assertEquals(userDto.getLastName(), updatedUserDto.getLastName());
+    assertEquals(true, updatedUserDto.isPendingEmailChange());
+    assertEquals(newEmail, updatedUserDto.getPendingEmail());
   }
 
   /** Test that the PUT /me/email endpoint sends an email reset token. */

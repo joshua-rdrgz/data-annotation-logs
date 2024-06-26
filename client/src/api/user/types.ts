@@ -6,4 +6,6 @@ export interface UserDTO {
   firstName: string;
   lastName: string;
   email: string;
+  pendingEmailChange: boolean;
+  pendingEmail?: string;
 }

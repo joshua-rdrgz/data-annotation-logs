@@ -43,9 +43,8 @@ public class UserController {
 
   @PutMapping("/email/verify")
   public ResponseEntity<EntityChangeResponse> changeEmail(
-      @AuthenticationPrincipal User user,
       @RequestBody EmailResetVerificationRequest emailResetVerification) {
-    EntityChangeResponse response = userService.changeEmail(user, emailResetVerification);
+    EntityChangeResponse response = userService.changeEmail(emailResetVerification);
     return ResponseEntity.status(response.getStatusCode()).body(response);
   }
 }

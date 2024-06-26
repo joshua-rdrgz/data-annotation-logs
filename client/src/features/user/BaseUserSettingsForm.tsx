@@ -8,6 +8,7 @@ import { Input } from '@/ui/input';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { UserSettingsFormWrapper } from './UserSettingsFormWrapper';
 
 const USER_SETTINGS_INPUTS = [
   {
@@ -54,11 +55,11 @@ export const BaseUserSettingsForm = () => {
   }
 
   return (
-    <section className='w-full sm:w-2/3 md:w-1/2'>
-      <h2 className='text-2xl font-bold mb-4'>Basic Info</h2>
+    <UserSettingsFormWrapper heading='Basic Info'>
       <F.Root formMethods={form} onSubmit={form.handleSubmit(onSubmit)}>
         {USER_SETTINGS_INPUTS.map((userSetting) => (
           <F.Field
+            key={userSetting.name}
             control={form.control}
             name={userSetting.name}
             render={({ field }) => (
@@ -82,6 +83,6 @@ export const BaseUserSettingsForm = () => {
           Update Settings
         </Button>
       </F.Root>
-    </section>
+    </UserSettingsFormWrapper>
   );
 };

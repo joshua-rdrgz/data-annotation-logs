@@ -123,4 +123,31 @@ public class UserServiceImpl implements UserService {
         .message("Email changed successfully.")
         .build();
   }
+
+  /**
+   * Cancels the email reset token for the given user.
+   *
+   * @param user the user for whom to cancel the email reset token
+   * @return EntityChangeResponse with the status of the operation
+   */
+  @Override
+  public EntityChangeResponse cancelEmailResetToken(User user) {
+    EmailResetToken emailResetToken = emailResetTokenRepository.findByUserId(user.getId());
+
+    if (emailResetToken == null) {
+      return EntityChangeResponse.builder()
+          .statusCode(HttpStatusCode.valueOf(400))
+          .status("fail")
+          .message("No email reset token found for the user.")
+          .build();
+    }
+
+    emailResetTokenRepository.delete(emailResetToken);
+
+    return EntityChangeResponse.builder()
+        .statusCode(HttpStatusCode.valueOf(200))
+        .status("success")
+        .message("Email reset token canceled successfully.")
+        .build();
+  }
 }

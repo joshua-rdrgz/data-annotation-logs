@@ -1,6 +1,8 @@
 package com.dataannotationlogs.api.dalogs.controller;
 
+import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -242,7 +244,26 @@ class UserControllerTest extends AuthTestBase {
     assertEquals(0, greenMail.getReceivedMessages().length);
   }
 
-  /** Test that the PUT /email/verify endpoint changes the email. */
+  @Test
+  void changeEmail_whenInvalidTokenIsProvided_shouldNotChangeEmail() throws Exception {
+    EmailResetVerificationRequest emailResetVerificationRequest =
+        new EmailResetVerificationRequest();
+    emailResetVerificationRequest.setToken("invalid-token");
+    emailResetVerificationRequest.setUserId(getUser().getId()); // Set the userId
+
+    mockMvc
+        .perform(
+            put("/api/v1/users/email/verify")
+                .cookie(getTokenCookie())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(emailResetVerificationRequest)))
+        .andExpect(status().isBadRequest());
+
+    // Verify that the email was not changed
+    User updatedUser = userRepository.findFirstById(getUser().getId());
+    assertEquals(getUser().getEmail(), updatedUser.getEmail());
+  }
+
   @Test
   void changeEmail_whenValidTokenIsProvided_shouldChangeEmail() throws Exception {
     String email = "jane@example.com";
@@ -260,6 +281,7 @@ class UserControllerTest extends AuthTestBase {
     EmailResetVerificationRequest emailResetVerificationRequest =
         new EmailResetVerificationRequest();
     emailResetVerificationRequest.setToken("token");
+    emailResetVerificationRequest.setUserId(getUser().getId()); // Set the userId
 
     mockMvc
         .perform(
@@ -274,23 +296,47 @@ class UserControllerTest extends AuthTestBase {
     assertEquals(email, updatedUser.getEmail());
   }
 
-  /** Test that the PUT /email/verify endpoint fails with an invalid token. */
+  /**
+   * Test that the PUT /me/email/cancel-reset endpoint cancels the email reset token when it exists.
+   */
   @Test
-  void changeEmail_whenInvalidTokenIsProvided_shouldNotChangeEmail() throws Exception {
-    EmailResetVerificationRequest emailResetVerificationRequest =
-        new EmailResetVerificationRequest();
-    emailResetVerificationRequest.setToken("invalid-token");
+  void cancelEmailResetToken_whenEmailResetTokenExists_shouldCancelToken() throws Exception {
+    // Create an email reset token for the user
+    String newEmail = "newemail@example.com";
+    EmailResetToken emailResetToken =
+        EmailResetToken.builder()
+            .user(getUser())
+            .token(passwordEncoder.encode("token"))
+            .newEmail(newEmail)
+            .expiryDate(LocalDateTime.now().plusMinutes(30))
+            .build();
+    emailResetTokenRepository.save(emailResetToken);
 
+    // Call the cancelEmailResetToken endpoint
     mockMvc
-        .perform(
-            put("/api/v1/users/email/verify")
-                .cookie(getTokenCookie())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(emailResetVerificationRequest)))
-        .andExpect(status().isBadRequest());
+        .perform(put("/api/v1/users/me/email/cancel-reset").cookie(getTokenCookie()))
+        .andExpect(status().isOk());
 
-    // Verify that the email was not changed
-    User updatedUser = userRepository.findFirstById(getUser().getId());
-    assertEquals(getUser().getEmail(), updatedUser.getEmail());
+    // Verify that the email reset token was deleted
+    EmailResetToken deletedToken = emailResetTokenRepository.findByUserId(getUser().getId());
+    assertNull(deletedToken);
+  }
+
+  /**
+   * Test that the PUT /me/email/cancel-reset endpoint returns a 400 Bad Request when no email reset
+   * token exists.
+   */
+  @Test
+  void cancelEmailResetToken_whenNoEmailResetTokenExists_shouldReturnBadRequest() throws Exception {
+    // Call the cancelEmailResetToken endpoint
+    MvcResult result =
+        mockMvc
+            .perform(put("/api/v1/users/me/email/cancel-reset").cookie(getTokenCookie()))
+            .andExpect(status().isBadRequest())
+            .andReturn();
+
+    // Verify the response message
+    String responseBody = result.getResponse().getContentAsString();
+    assertTrue(responseBody.contains("No email reset token found for the user."));
   }
 }

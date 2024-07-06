@@ -1,4 +1,8 @@
 import { UserDTO } from '../../src/api/user/types';
+import {
+  CancelEmailResetTestIds,
+  UserEmailSettingsFormTestIds,
+} from '../../src/features/user/testIds';
 
 describe('Email Change and Verification', () => {
   describe('Change Email Form', () => {
@@ -19,8 +23,12 @@ describe('Email Change and Verification', () => {
      * Verifies that the form is pre-populated with user email and the update button is initially disabled.
      */
     it('should pre-populate form with user email and have update button disabled initially', () => {
-      cy.get('input[name="email"]').should('have.value', userData.email);
-      cy.contains('button', 'Update Email').should('be.disabled');
+      cy.get(
+        `[data-testid="${UserEmailSettingsFormTestIds.EmailInput}"]`,
+      ).should('have.value', userData.email);
+      cy.get(
+        `[data-testid="${UserEmailSettingsFormTestIds.UpdateEmailButton}"]`,
+      ).should('be.disabled');
     });
 
     /**
@@ -28,20 +36,29 @@ describe('Email Change and Verification', () => {
      */
     it('should enable and disable update button based on email changes', () => {
       const newEmail = 'new.email@example.com';
-      cy.get('input[name="email"]').as('emailInput');
 
       // Test email change
-      cy.get('@emailInput').clear().type(newEmail);
-      cy.contains('button', 'Update Email').should('be.enabled');
+      cy.get(`[data-testid="${UserEmailSettingsFormTestIds.EmailInput}"]`)
+        .clear()
+        .type(newEmail);
+      cy.get(
+        `[data-testid="${UserEmailSettingsFormTestIds.UpdateEmailButton}"]`,
+      ).should('be.enabled');
 
-      cy.get('@emailInput').clear().type(userData.email);
-      cy.contains('button', 'Update Email').should('be.disabled');
+      // Test reverting to original email
+      cy.get(`[data-testid="${UserEmailSettingsFormTestIds.EmailInput}"]`)
+        .clear()
+        .type(userData.email);
+      cy.get(
+        `[data-testid="${UserEmailSettingsFormTestIds.UpdateEmailButton}"]`,
+      ).should('be.disabled');
     });
 
     /**
-     * Verifies that a toast is shown and the form is disabled on successful email update request.
+     * Verifies the email update process, including form state changes, pending email change notification,
+     * and the ability to cancel the pending change.
      */
-    it('should show toast and disable form on successful email update request', () => {
+    it('should handle email update process and cancellation correctly', () => {
       const newEmail = 'new.email@example.com';
 
       // Intercept API calls
@@ -66,16 +83,84 @@ describe('Email Change and Verification', () => {
       }).as('getUserUpdated');
 
       // Update email
-      cy.get('input[name="email"]').clear().type(newEmail);
-      cy.contains('button', 'Update Email').click();
+      cy.get(`[data-testid="${UserEmailSettingsFormTestIds.EmailInput}"]`)
+        .clear()
+        .type(newEmail);
+      cy.get(
+        `[data-testid="${UserEmailSettingsFormTestIds.UpdateEmailButton}"]`,
+      ).click();
 
-      // Check results
       cy.wait('@updateEmail');
       cy.wait('@getUserUpdated');
+
+      // Check results after update
       cy.get('.react-hot-toast').should('have.length.greaterThan', 0);
-      cy.get('input[name="email"]').should('be.disabled');
-      cy.contains('button', 'Update Email').should('be.disabled');
-      cy.contains(newEmail).should('be.visible');
+      cy.get(
+        `[data-testid="${UserEmailSettingsFormTestIds.EmailInput}"]`,
+      ).should('be.disabled');
+      cy.get(
+        `[data-testid="${UserEmailSettingsFormTestIds.UpdateEmailButton}"]`,
+      ).should('be.disabled');
+      cy.get(
+        `[data-testid="${UserEmailSettingsFormTestIds.PendingEmailChangeNotification}"]`,
+      ).should('be.visible');
+
+      // Test cancellation process
+      cy.get(
+        `[data-testid="${CancelEmailResetTestIds.CancelEmailChangeButton}"]`,
+      ).click();
+      cy.get(
+        `[data-testid="${CancelEmailResetTestIds.CancelEmailChangeDialog}"]`,
+      ).should('be.visible');
+
+      // Close dialog with "No" button
+      cy.get(
+        `[data-testid="${CancelEmailResetTestIds.CancelCancelEmailChangeButton}"]`,
+      ).click();
+      cy.get(
+        `[data-testid="${CancelEmailResetTestIds.CancelEmailChangeDialog}"]`,
+      ).should('not.exist');
+
+      // Reopen and confirm cancellation
+      cy.get(
+        `[data-testid="${CancelEmailResetTestIds.CancelEmailChangeButton}"]`,
+      ).click();
+
+      // Intercept cancellation request
+      cy.intercept('PUT', '/api/v1/users/me/email/cancel-reset', {
+        statusCode: 200,
+        body: {
+          httpStatusCode: '200',
+          status: 'success',
+          message: 'Email change cancelled successfully',
+        },
+      }).as('cancelEmailChange');
+
+      // Intercept updated user data after cancellation
+      cy.intercept('GET', '/api/v1/users/me', {
+        body: { ...userData, pendingEmailChange: false, pendingEmail: null },
+      }).as('getUserAfterCancellation');
+
+      // Confirm cancellation
+      cy.get(
+        `[data-testid="${CancelEmailResetTestIds.ConfirmCancelEmailChangeButton}"]`,
+      ).click();
+
+      // Verify API calls
+      cy.wait('@cancelEmailChange');
+      cy.wait('@getUserAfterCancellation');
+
+      // Verify UI updates after cancellation
+      cy.get('.react-hot-toast').should('have.length.greaterThan', 0);
+      cy.get(
+        `[data-testid="${UserEmailSettingsFormTestIds.PendingEmailChangeNotification}"]`,
+      ).should('not.exist');
+      cy.get(`[data-testid="${UserEmailSettingsFormTestIds.EmailInput}"]`)
+        .should('have.value', userData.email)
+        .and('not.be.disabled');
+      cy.get(
+        `[data-testid="${UserEmailSettingsFormTestIds.UpdateEmailButton}"]`,
+      ).should('be.disabled');
     });
   });
 

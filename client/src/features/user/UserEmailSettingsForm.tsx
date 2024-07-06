@@ -8,6 +8,9 @@ import { Button } from '@/ui/button';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { UserSettingsFormWrapper } from './UserSettingsFormWrapper';
 import { useSendEmailResetToken } from './useSendEmailResetToken';
+import { CancelEmailReset } from './CancelEmailReset';
+import { useCallback } from 'react';
+import { UserEmailSettingsFormTestIds } from './testIds';
 
 const userEmailSettingsSchema = z.object({
   email: z.string().email('Invalid email address.'),
@@ -17,22 +20,30 @@ type UserEmailSettingsSchema = z.infer<typeof userEmailSettingsSchema>;
 
 export const UserEmailSettingsForm = () => {
   const { data: user, isPending: isUserPending } = useUser();
-
-  const { mutate: sendEmailResetToken } = useSendEmailResetToken();
+  const { mutate: sendEmailResetToken, isPending: isEmailResetPending } =
+    useSendEmailResetToken();
 
   const formMethods = useForm<UserEmailSettingsSchema>({
     resolver: zodResolver(userEmailSettingsSchema),
     defaultValues: {
-      email: user?.email || '',
+      email: user?.pendingEmailChange ? user.pendingEmail : user?.email || '',
     },
     mode: 'onChange',
   });
 
-  const isFormUnchanged = formMethods.watch('email') === user?.email;
+  const isFormUnchanged =
+    formMethods.watch('email') ===
+    (user?.pendingEmailChange ? user.pendingEmail : user?.email);
 
   const onSubmit = (values: UserEmailSettingsSchema) => {
     sendEmailResetToken(values);
   };
+
+  const handleCancelSuccess = useCallback(() => {
+    if (user?.email) {
+      formMethods.setValue('email', user.email);
+    }
+  }, [user?.email, formMethods]);
 
   if (isUserPending) {
     return <ComponentLoader />;
@@ -40,17 +51,7 @@ export const UserEmailSettingsForm = () => {
 
   return (
     <UserSettingsFormWrapper heading='Change Email'>
-      {user?.pendingEmailChange && (
-        <div className='mb-4 p-2 bg-yellow-100 text-yellow-800 rounded'>
-          Please verify the new email address{' '}
-          {user.pendingEmail && (
-            <>
-              (<strong>{user.pendingEmail}</strong>)
-            </>
-          )}{' '}
-          before attempting another change.
-        </div>
-      )}
+      <CancelEmailReset onCancelSuccess={handleCancelSuccess} />
       <F.Root
         formMethods={formMethods}
         onSubmit={formMethods.handleSubmit(onSubmit)}
@@ -65,7 +66,11 @@ export const UserEmailSettingsForm = () => {
                 <F.Message />
               </div>
               <F.Control>
-                <Input {...field} disabled={user?.pendingEmailChange} />
+                <Input
+                  {...field}
+                  disabled={user?.pendingEmailChange}
+                  data-testid={UserEmailSettingsFormTestIds.EmailInput}
+                />
               </F.Control>
             </F.Item>
           )}
@@ -76,10 +81,12 @@ export const UserEmailSettingsForm = () => {
           disabled={
             !formMethods.formState.isValid ||
             isFormUnchanged ||
-            user?.pendingEmailChange
+            user?.pendingEmailChange ||
+            isEmailResetPending
           }
+          data-testid={UserEmailSettingsFormTestIds.UpdateEmailButton}
         >
-          Update Email
+          {isEmailResetPending ? 'Updating email...' : 'Update Email'}
         </Button>
       </F.Root>
     </UserSettingsFormWrapper>

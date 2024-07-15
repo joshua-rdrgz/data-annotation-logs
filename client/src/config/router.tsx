@@ -1,9 +1,13 @@
 import { PrivateRoute } from '@/features/auth/PrivateRoute';
 import { DashboardLayout } from '@/features/dashboard/DashboardLayout';
+import { AppErrorPage } from '@/pages/AppErrorPage';
+import { FullErrorPage } from '@/pages/FullErrorPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { ResendVerificationPage } from '@/pages/ResendVerificationPage';
 import { SignUpPage } from '@/pages/SignUpPage';
 import { SignUpSuccessPage } from '@/pages/SignUpSuccessPage';
+import { UserSettingsPage } from '@/pages/UserSettingsPage';
+import { VerifyEmailChangePage } from '@/pages/VerifyEmailChangePage';
 import { VerifyPage } from '@/pages/VerifyPage';
 import { RouteObject, redirect } from 'react-router-dom';
 
@@ -16,6 +20,8 @@ export enum ClientRoutes {
   DASHBOARD = '/app/dashboard',
   CURRENT_SESSION = '/app/current-session',
   MY_SESSIONS = '/app/my-sessions',
+  USER_SETTINGS = '/app/settings',
+  VERIFY_EMAIL_CHANGE = '/verify-email-change',
 }
 
 export const routerConfig: RouteObject[] = [
@@ -44,8 +50,14 @@ export const routerConfig: RouteObject[] = [
     element: <ResendVerificationPage />,
   },
   {
+    path: ClientRoutes.VERIFY_EMAIL_CHANGE,
+    element: <VerifyEmailChangePage />,
+    errorElement: <FullErrorPage />,
+  },
+  {
     path: '/',
     element: <PrivateRoute />,
+    errorElement: <FullErrorPage />,
     children: [
       {
         path: '/app',
@@ -62,6 +74,11 @@ export const routerConfig: RouteObject[] = [
           {
             path: 'my-sessions',
             element: <div>My Sessions Page</div>,
+          },
+          {
+            path: 'settings',
+            element: <UserSettingsPage />,
+            errorElement: <AppErrorPage />,
           },
         ],
       },

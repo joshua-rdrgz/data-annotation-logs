@@ -31,7 +31,8 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public UserDto getCurrentUser(User user) {
-    return UserDto.fromUser(user);
+    EmailResetToken emailResetToken = emailResetTokenRepository.findByUserId(user.getId());
+    return UserDto.fromUser(user, emailResetToken);
   }
 
   @Override
@@ -41,12 +42,14 @@ public class UserServiceImpl implements UserService {
     }
 
     User managedUser = userRepository.findFirstById(user.getId());
+    EmailResetToken emailResetToken = emailResetTokenRepository.findByUserId(managedUser.getId());
+
     managedUser.setFirstName(userDto.getFirstName());
     managedUser.setLastName(userDto.getLastName());
 
     User updatedUser = userRepository.save(managedUser);
 
-    return UserDto.fromUser(updatedUser);
+    return UserDto.fromUser(updatedUser, emailResetToken);
   }
 
   @Override
@@ -73,7 +76,11 @@ public class UserServiceImpl implements UserService {
 
     emailResetTokenRepository.save(emailResetToken);
 
-    String verificationLink = "http://localhost:5173/verify-change-email?token=" + token;
+    String verificationLink =
+        "http://localhost:5173/verify-email-change?token="
+            + token
+            + "&userId="
+            + managedUser.getId();
     emailService.sendEmail(emailReset.getEmail(), "Email Reset Verification", verificationLink);
 
     return EntityChangeResponse.builder()
@@ -84,9 +91,15 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public EntityChangeResponse changeEmail(
-      User user, EmailResetVerificationRequest emailResetVerification) {
-    User managedUser = userRepository.findFirstById(user.getId());
+  public EntityChangeResponse changeEmail(EmailResetVerificationRequest emailResetVerification) {
+    User managedUser = userRepository.findFirstById(emailResetVerification.getUserId());
+    if (managedUser == null) {
+      return EntityChangeResponse.builder()
+          .statusCode(HttpStatusCode.valueOf(400))
+          .status("fail")
+          .message("User not found.")
+          .build();
+    }
 
     EmailResetToken emailResetToken = emailResetTokenRepository.findByUserId(managedUser.getId());
     if (emailResetToken == null
@@ -108,6 +121,33 @@ public class UserServiceImpl implements UserService {
         .statusCode(HttpStatusCode.valueOf(200))
         .status("success")
         .message("Email changed successfully.")
+        .build();
+  }
+
+  /**
+   * Cancels the email reset token for the given user.
+   *
+   * @param user the user for whom to cancel the email reset token
+   * @return EntityChangeResponse with the status of the operation
+   */
+  @Override
+  public EntityChangeResponse cancelEmailResetToken(User user) {
+    EmailResetToken emailResetToken = emailResetTokenRepository.findByUserId(user.getId());
+
+    if (emailResetToken == null) {
+      return EntityChangeResponse.builder()
+          .statusCode(HttpStatusCode.valueOf(400))
+          .status("fail")
+          .message("No email reset token found for the user.")
+          .build();
+    }
+
+    emailResetTokenRepository.delete(emailResetToken);
+
+    return EntityChangeResponse.builder()
+        .statusCode(HttpStatusCode.valueOf(200))
+        .status("success")
+        .message("Email reset token canceled successfully.")
         .build();
   }
 }

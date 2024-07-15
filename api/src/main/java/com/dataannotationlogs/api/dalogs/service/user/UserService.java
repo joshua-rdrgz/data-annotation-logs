@@ -15,5 +15,7 @@ public interface UserService {
 
   EntityChangeResponse sendEmailResetToken(User user, EmailResetRequest emailReset);
 
-  EntityChangeResponse changeEmail(User user, EmailResetVerificationRequest token);
+  EntityChangeResponse changeEmail(EmailResetVerificationRequest emailResetVerification);
+
+  EntityChangeResponse cancelEmailResetToken(User user);
 }

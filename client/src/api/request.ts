@@ -1,5 +1,11 @@
 import axiosModule, { AxiosRequestConfig } from 'axios';
 
+export interface EntityChangeResponse {
+  httpStatusCode: string;
+  status: string;
+  message: string;
+}
+
 const axios = axiosModule.create({
   timeout: 5000,
 });

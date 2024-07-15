@@ -43,9 +43,21 @@ public class UserController {
 
   @PutMapping("/email/verify")
   public ResponseEntity<EntityChangeResponse> changeEmail(
-      @AuthenticationPrincipal User user,
       @RequestBody EmailResetVerificationRequest emailResetVerification) {
-    EntityChangeResponse response = userService.changeEmail(user, emailResetVerification);
+    EntityChangeResponse response = userService.changeEmail(emailResetVerification);
+    return ResponseEntity.status(response.getStatusCode()).body(response);
+  }
+
+  /**
+   * Cancels the email reset token for the current user.
+   *
+   * @param user the authenticated user
+   * @return ResponseEntity with the EntityChangeResponse
+   */
+  @PutMapping("/me/email/cancel-reset")
+  public ResponseEntity<EntityChangeResponse> cancelEmailResetToken(
+      @AuthenticationPrincipal User user) {
+    EntityChangeResponse response = userService.cancelEmailResetToken(user);
     return ResponseEntity.status(response.getStatusCode()).body(response);
   }
 }

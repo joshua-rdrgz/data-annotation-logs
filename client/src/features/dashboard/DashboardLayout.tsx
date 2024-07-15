@@ -59,6 +59,7 @@ export const DashboardLayout = () => {
               { path: ClientRoutes.DASHBOARD, label: 'Dashboard' },
               { path: ClientRoutes.CURRENT_SESSION, label: 'Current Session' },
               { path: ClientRoutes.MY_SESSIONS, label: 'Sessions History' },
+              { path: ClientRoutes.USER_SETTINGS, label: 'Settings' },
             ].map(({ path, label }) => (
               <li
                 key={path}

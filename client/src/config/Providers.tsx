@@ -7,7 +7,11 @@ import { ThemeProvider } from '@/config/theme-provider';
 export const Providers = ({ children }: React.PropsWithChildren) => {
   return (
     <QueryClientProvider client={queryClient}>
-      <Toaster position='top-center' reverseOrder={false} />
+      <Toaster
+        containerClassName='react-hot-toast'
+        position='top-center'
+        reverseOrder={false}
+      />
       <ThemeProvider>{children}</ThemeProvider>
       <ReactQueryDevtools />
     </QueryClientProvider>

@@ -2,15 +2,22 @@ package com.dataannotationlogs.api.dalogs.service.user.impl;
 
 import com.dataannotationlogs.api.dalogs.dto.email.EmailResetRequest;
 import com.dataannotationlogs.api.dalogs.dto.email.EmailResetVerificationRequest;
+import com.dataannotationlogs.api.dalogs.dto.password.PasswordChangeRequest;
+import com.dataannotationlogs.api.dalogs.dto.password.PasswordResetVerifyRequest;
 import com.dataannotationlogs.api.dalogs.dto.response.EntityChangeResponse;
 import com.dataannotationlogs.api.dalogs.dto.user.UserDto;
 import com.dataannotationlogs.api.dalogs.entity.EmailResetToken;
+import com.dataannotationlogs.api.dalogs.entity.PasswordResetOtp;
 import com.dataannotationlogs.api.dalogs.entity.User;
 import com.dataannotationlogs.api.dalogs.repository.emailresettoken.EmailResetTokenRepository;
+import com.dataannotationlogs.api.dalogs.repository.passwordresetotp.PasswordResetOtpRepository;
 import com.dataannotationlogs.api.dalogs.repository.user.UserRepository;
 import com.dataannotationlogs.api.dalogs.service.email.EmailService;
 import com.dataannotationlogs.api.dalogs.service.user.UserService;
+import com.dataannotationlogs.api.dalogs.util.TimeUtil;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatusCode;
@@ -26,13 +33,15 @@ public class UserServiceImpl implements UserService {
 
   private final UserRepository userRepository;
   private final EmailResetTokenRepository emailResetTokenRepository;
+  private final PasswordResetOtpRepository passwordResetOtpRepository;
   private final EmailService emailService;
   private final PasswordEncoder passwordEncoder;
 
   @Override
   public UserDto getCurrentUser(User user) {
     EmailResetToken emailResetToken = emailResetTokenRepository.findByUserId(user.getId());
-    return UserDto.fromUser(user, emailResetToken);
+    PasswordResetOtp passwordResetOtp = passwordResetOtpRepository.findByUserId(user.getId());
+    return UserDto.fromUser(user, emailResetToken, passwordResetOtp);
   }
 
   @Override
@@ -43,13 +52,15 @@ public class UserServiceImpl implements UserService {
 
     User managedUser = userRepository.findFirstById(user.getId());
     EmailResetToken emailResetToken = emailResetTokenRepository.findByUserId(managedUser.getId());
+    PasswordResetOtp passwordResetOtp =
+        passwordResetOtpRepository.findByUserId(managedUser.getId());
 
     managedUser.setFirstName(userDto.getFirstName());
     managedUser.setLastName(userDto.getLastName());
 
     User updatedUser = userRepository.save(managedUser);
 
-    return UserDto.fromUser(updatedUser, emailResetToken);
+    return UserDto.fromUser(updatedUser, emailResetToken, passwordResetOtp);
   }
 
   @Override
@@ -58,11 +69,8 @@ public class UserServiceImpl implements UserService {
 
     EmailResetToken existingToken = emailResetTokenRepository.findByUserId(managedUser.getId());
     if (existingToken != null && existingToken.getExpiryDate().isAfter(LocalDateTime.now())) {
-      return EntityChangeResponse.builder()
-          .statusCode(HttpStatusCode.valueOf(400))
-          .status("fail")
-          .message("Could not send email reset token. Please try again later.")
-          .build();
+      return sendErrorResponseWithMessage(
+          "Could not send email reset token. Please try again later.");
     }
 
     String token = UUID.randomUUID().toString();
@@ -93,23 +101,13 @@ public class UserServiceImpl implements UserService {
   @Override
   public EntityChangeResponse changeEmail(EmailResetVerificationRequest emailResetVerification) {
     User managedUser = userRepository.findFirstById(emailResetVerification.getUserId());
-    if (managedUser == null) {
-      return EntityChangeResponse.builder()
-          .statusCode(HttpStatusCode.valueOf(400))
-          .status("fail")
-          .message("User not found.")
-          .build();
-    }
-
     EmailResetToken emailResetToken = emailResetTokenRepository.findByUserId(managedUser.getId());
-    if (emailResetToken == null
+
+    if (managedUser == null
+        || emailResetToken == null
         || !passwordEncoder.matches(
             emailResetVerification.getToken(), emailResetToken.getToken())) {
-      return EntityChangeResponse.builder()
-          .statusCode(HttpStatusCode.valueOf(400))
-          .status("fail")
-          .message("Could not change email.")
-          .build();
+      return sendErrorResponseWithMessage("Could not change email.");
     }
 
     managedUser.setEmail(emailResetToken.getNewEmail());
@@ -124,22 +122,12 @@ public class UserServiceImpl implements UserService {
         .build();
   }
 
-  /**
-   * Cancels the email reset token for the given user.
-   *
-   * @param user the user for whom to cancel the email reset token
-   * @return EntityChangeResponse with the status of the operation
-   */
   @Override
   public EntityChangeResponse cancelEmailResetToken(User user) {
     EmailResetToken emailResetToken = emailResetTokenRepository.findByUserId(user.getId());
 
     if (emailResetToken == null) {
-      return EntityChangeResponse.builder()
-          .statusCode(HttpStatusCode.valueOf(400))
-          .status("fail")
-          .message("No email reset token found for the user.")
-          .build();
+      return sendErrorResponseWithMessage("No email reset token found for the user.");
     }
 
     emailResetTokenRepository.delete(emailResetToken);
@@ -148,6 +136,149 @@ public class UserServiceImpl implements UserService {
         .statusCode(HttpStatusCode.valueOf(200))
         .status("success")
         .message("Email reset token canceled successfully.")
+        .build();
+  }
+
+  @Override
+  public EntityChangeResponse sendPasswordResetOtp(User user) {
+    User managedUser = userRepository.findFirstById(user.getId());
+    PasswordResetOtp existingOtp = passwordResetOtpRepository.findByUserId(managedUser.getId());
+
+    // OTP exists and is NOT expired
+    if (existingOtp != null && existingOtp.getExpiryDate().isAfter(LocalDateTime.now())) {
+      return sendGenericErrorResponse();
+    }
+
+    // OTP exists and unfinished cooldown
+    if (existingOtp != null
+        && existingOtp.getCooldownComplete() != null
+        && existingOtp.getCooldownComplete().isAfter(LocalDateTime.now())) {
+      Optional<Long> minutesRemaining =
+          TimeUtil.minutesBetween(LocalDateTime.now(), existingOtp.getCooldownComplete());
+
+      return sendErrorResponseWithMessage(
+          String.format(
+              "You must wait %d minutes before requesting a new password reset OTP.",
+              minutesRemaining.get()));
+    }
+
+    // OTP exists and IS expired
+    if (existingOtp != null && existingOtp.getExpiryDate().isBefore(LocalDateTime.now())) {
+      passwordResetOtpRepository.delete(existingOtp);
+    }
+
+    String otp = generateOtp();
+
+    PasswordResetOtp passwordResetOtp =
+        PasswordResetOtp.builder()
+            .user(managedUser)
+            .otp(passwordEncoder.encode(otp))
+            .expiryDate(LocalDateTime.now().plusMinutes(15))
+            .build();
+
+    passwordResetOtpRepository.save(passwordResetOtp);
+    emailService.sendEmail(managedUser.getEmail(), "Password Reset OTP", "Your OTP is: " + otp);
+
+    return EntityChangeResponse.builder()
+        .statusCode(HttpStatusCode.valueOf(200))
+        .status("success")
+        .message("OTP sent successfully.")
+        .build();
+  }
+
+  @Override
+  public EntityChangeResponse verifyPasswordResetOtp(
+      User user, PasswordResetVerifyRequest request) {
+    User managedUser = userRepository.findFirstById(user.getId());
+    PasswordResetOtp otp = passwordResetOtpRepository.findByUserId(managedUser.getId());
+
+    // OTP doesn't exist
+    if (otp == null) {
+      return sendGenericErrorResponse();
+    }
+
+    // OTP is expired
+    if (otp.getExpiryDate().isBefore(LocalDateTime.now())) {
+      return sendErrorResponseWithMessage("OTP is expired, please request a new one.");
+    }
+
+    // OTP is invalid
+    if (!passwordEncoder.matches(request.getOtp(), otp.getOtp())) {
+      int newAttemptsRemaining = otp.getAttemptsRemaining() - 1;
+      otp.setAttemptsRemaining(newAttemptsRemaining);
+
+      String message;
+
+      // Add cooldown_complete field if no more attempts
+      if (newAttemptsRemaining <= 0) {
+        LocalDateTime now = LocalDateTime.now();
+
+        otp.setCooldownComplete(now.plusMinutes(30));
+        otp.setExpiryDate(now);
+
+        message = "Too many attempts.  Please wait 30 minutes, then request a new OTP.";
+      } else {
+        message =
+            String.format("Invalid OTP, you have %d attempts remaining.", newAttemptsRemaining);
+      }
+
+      // Save all changes
+      passwordResetOtpRepository.save(otp);
+
+      return sendErrorResponseWithMessage(message);
+    }
+
+    // OTP is valid.
+    otp.setVerified(true);
+    passwordResetOtpRepository.save(otp);
+
+    return EntityChangeResponse.builder()
+        .statusCode(HttpStatusCode.valueOf(200))
+        .status("success")
+        .message("OTP verified successfully.")
+        .build();
+  }
+
+  @Override
+  public EntityChangeResponse changePassword(User user, PasswordChangeRequest request) {
+    User managedUser = userRepository.findFirstById(user.getId());
+    PasswordResetOtp otp = passwordResetOtpRepository.findByUserId(managedUser.getId());
+
+    // OTP doesn't exist, or
+    // OTP isn't verified, or
+    // OTP is expired.
+    if (otp == null || !otp.isVerified() || otp.getExpiryDate().isBefore(LocalDateTime.now())) {
+      return sendGenericErrorResponse();
+    }
+
+    managedUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
+    userRepository.save(managedUser);
+    passwordResetOtpRepository.delete(otp);
+
+    return EntityChangeResponse.builder()
+        .statusCode(HttpStatusCode.valueOf(200))
+        .status("success")
+        .message("Password changed successfully.")
+        .build();
+  }
+
+  private String generateOtp() {
+    return String.format("%06d", new SecureRandom().nextInt(1000000));
+  }
+
+  private EntityChangeResponse sendGenericErrorResponse() {
+    return EntityChangeResponse.builder()
+        .statusCode(HttpStatusCode.valueOf(400))
+        .status("fail")
+        .message("An error occurred. Please try again.")
+        .build();
+  }
+
+  private EntityChangeResponse sendErrorResponseWithMessage(String message) {
+    return EntityChangeResponse.builder()
+        .statusCode(HttpStatusCode.valueOf(400))
+        .status("fail")
+        .message(message)
         .build();
   }
 }

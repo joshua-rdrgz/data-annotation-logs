@@ -2,6 +2,8 @@ package com.dataannotationlogs.api.dalogs.controller;
 
 import com.dataannotationlogs.api.dalogs.dto.email.EmailResetRequest;
 import com.dataannotationlogs.api.dalogs.dto.email.EmailResetVerificationRequest;
+import com.dataannotationlogs.api.dalogs.dto.password.PasswordChangeRequest;
+import com.dataannotationlogs.api.dalogs.dto.password.PasswordResetVerifyRequest;
 import com.dataannotationlogs.api.dalogs.dto.response.EntityChangeResponse;
 import com.dataannotationlogs.api.dalogs.dto.user.UserDto;
 import com.dataannotationlogs.api.dalogs.entity.User;
@@ -48,16 +50,31 @@ public class UserController {
     return ResponseEntity.status(response.getStatusCode()).body(response);
   }
 
-  /**
-   * Cancels the email reset token for the current user.
-   *
-   * @param user the authenticated user
-   * @return ResponseEntity with the EntityChangeResponse
-   */
   @PutMapping("/me/email/cancel-reset")
   public ResponseEntity<EntityChangeResponse> cancelEmailResetToken(
       @AuthenticationPrincipal User user) {
     EntityChangeResponse response = userService.cancelEmailResetToken(user);
+    return ResponseEntity.status(response.getStatusCode()).body(response);
+  }
+
+  @PutMapping("/me/password")
+  public ResponseEntity<EntityChangeResponse> sendPasswordResetOtp(
+      @AuthenticationPrincipal User user) {
+    EntityChangeResponse response = userService.sendPasswordResetOtp(user);
+    return ResponseEntity.status(response.getStatusCode()).body(response);
+  }
+
+  @PutMapping("/me/password/verify")
+  public ResponseEntity<EntityChangeResponse> verifyPasswordResetOtp(
+      @AuthenticationPrincipal User user, @RequestBody PasswordResetVerifyRequest request) {
+    EntityChangeResponse response = userService.verifyPasswordResetOtp(user, request);
+    return ResponseEntity.status(response.getStatusCode()).body(response);
+  }
+
+  @PutMapping("/me/password/change")
+  public ResponseEntity<EntityChangeResponse> changePassword(
+      @AuthenticationPrincipal User user, @RequestBody PasswordChangeRequest request) {
+    EntityChangeResponse response = userService.changePassword(user, request);
     return ResponseEntity.status(response.getStatusCode()).body(response);
   }
 }

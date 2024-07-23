@@ -247,7 +247,7 @@ public class UserServiceImpl implements UserService {
     // OTP doesn't exist, or
     // OTP isn't verified, or
     // OTP is expired.
-    if (otp == null || !otp.isVerified() || otp.getExpiryDate().isBefore(LocalDateTime.now())) {
+    if (otp == null || !otp.getVerified() || otp.getExpiryDate().isBefore(LocalDateTime.now())) {
       return sendGenericErrorResponse();
     }
 

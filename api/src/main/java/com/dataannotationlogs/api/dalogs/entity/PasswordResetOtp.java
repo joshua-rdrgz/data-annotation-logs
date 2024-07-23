@@ -40,10 +40,10 @@ public class PasswordResetOtp {
   private String otp;
 
   @Column(name = "verified", nullable = false)
-  private boolean verified;
+  private Boolean verified;
 
   @Column(name = "attempts_remaining", nullable = false)
-  private int attemptsRemaining;
+  private Integer attemptsRemaining;
 
   @Column(name = "expiry_date", nullable = false)
   private LocalDateTime expiryDate;
@@ -51,9 +51,14 @@ public class PasswordResetOtp {
   @Column(name = "cooldown_complete")
   private LocalDateTime cooldownComplete;
 
+  /** prePersist. */
   @PrePersist
   public void prePersist() {
-    attemptsRemaining = 3;
-    verified = false;
+    if (attemptsRemaining == null) {
+      attemptsRemaining = 3;
+    }
+    if (verified == null) {
+      verified = false;
+    }
   }
 }

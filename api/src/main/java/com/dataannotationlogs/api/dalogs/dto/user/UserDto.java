@@ -29,7 +29,7 @@ public class UserDto {
     Optional<Long> cooldownMinsRemaining = null;
 
     if (passwordResetOtp != null) {
-      if (passwordResetOtp.isVerified()) {
+      if (passwordResetOtp.getVerified()) {
         status = PasswordResetStatus.OTP_VERIFIED;
       } else {
         status = PasswordResetStatus.OTP_SENT;

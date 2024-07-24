@@ -5,5 +5,6 @@ public enum PasswordResetStatus {
   INACTIVE,
   OTP_SENT,
   OTP_VERIFIED,
-  OTP_ON_COOLDOWN,
+  OTP_TIMEOUT_COOLDOWN,
+  OTP_COMPLETE_COOLDOWN
 }

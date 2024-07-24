@@ -1,5 +1,6 @@
 package com.dataannotationlogs.api.dalogs.controller;
 
+import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -124,6 +125,39 @@ class UserControllerPasswordChangeTest extends AuthTestBase {
     PasswordResetOtp newOtp = passwordResetOtpRepository.findByUserId(getUser().getId());
     assertNotNull(newOtp);
     assertNotEquals(expiredOtp.getOtp(), newOtp.getOtp());
+  }
+
+  @Test
+  void sendPasswordResetOtp_whenOnCompletionCooldown_shouldFail() throws Exception {
+    User user = getUser();
+    user.setLastPasswordChange(LocalDateTime.now().minusHours(23)); // Set last password change to
+    // 23 hours ago
+    userRepository.save(user);
+
+    mockMvc
+        .perform(put("/api/v1/users/me/password").cookie(getTokenCookie()))
+        .andExpect(status().isBadRequest())
+        .andReturn();
+
+    // Verify that no OTP was created
+    PasswordResetOtp otp = passwordResetOtpRepository.findByUserId(user.getId());
+    assertNull(otp);
+  }
+
+  @Test
+  void sendPasswordResetOtp_whenCompletionCooldownExpired_shouldSucceed() throws Exception {
+    User user = getUser();
+    user.setLastPasswordChange(LocalDateTime.now().minusHours(25)); // Set last password change to
+    // 25 hours ago
+    userRepository.save(user);
+
+    mockMvc
+        .perform(put("/api/v1/users/me/password").cookie(getTokenCookie()))
+        .andExpect(status().isOk())
+        .andReturn();
+
+    PasswordResetOtp otp = passwordResetOtpRepository.findByUserId(user.getId());
+    assertNotNull(otp);
   }
 
   @Test
@@ -256,6 +290,26 @@ class UserControllerPasswordChangeTest extends AuthTestBase {
   }
 
   @Test
+  void verifyPasswordResetOtp_whenOnCompletionCooldown_shouldFail() throws Exception {
+    User user = getUser();
+    user.setLastPasswordChange(LocalDateTime.now().minusHours(23)); // Set last password change to
+    // 23 hours ago
+    userRepository.save(user);
+
+    PasswordResetVerifyRequest request = new PasswordResetVerifyRequest();
+    request.setOtp("123456");
+
+    mockMvc
+        .perform(
+            put("/api/v1/users/me/password/verify")
+                .cookie(getTokenCookie())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest())
+        .andReturn();
+  }
+
+  @Test
   void changePassword_whenValidOtp_shouldChangePassword() throws Exception {
     PasswordResetOtp verifiedOtp =
         PasswordResetOtp.builder()
@@ -358,5 +412,28 @@ class UserControllerPasswordChangeTest extends AuthTestBase {
 
     User updatedUser = userRepository.findFirstById(getUser().getId());
     assertFalse(passwordEncoder.matches(newPassword, updatedUser.getPassword()));
+  }
+
+  @Test
+  void changePassword_whenOnCompletionCooldown_shouldFail() throws Exception {
+    User user = getUser();
+    user.setLastPasswordChange(LocalDateTime.now().minusHours(23)); // Set last password change to
+    // 23 hours ago
+    userRepository.save(user);
+
+    PasswordChangeRequest request = new PasswordChangeRequest();
+    request.setNewPassword("newPassword123");
+
+    mockMvc
+        .perform(
+            put("/api/v1/users/me/password/change")
+                .cookie(getTokenCookie())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest())
+        .andReturn();
+
+    User updatedUser = userRepository.findFirstById(user.getId());
+    assertNotEquals("newPassword123", updatedUser.getPassword());
   }
 }

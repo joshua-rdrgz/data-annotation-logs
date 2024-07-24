@@ -26,7 +26,7 @@ public class UserDto {
   public static UserDto fromUser(
       User user, EmailResetToken emailResetToken, PasswordResetOtp passwordResetOtp) {
     PasswordResetStatus status = PasswordResetStatus.INACTIVE;
-    Optional<Long> cooldownMinsRemaining = null;
+    Optional<Long> cooldownMinsRemaining = Optional.empty();
 
     if (passwordResetOtp != null) {
       if (passwordResetOtp.getVerified()) {
@@ -38,7 +38,7 @@ public class UserDto {
         if (passwordResetOtp.getCooldownComplete() != null) {
           // Active cooldown exists
           if (passwordResetOtp.getCooldownComplete().isAfter(LocalDateTime.now())) {
-            status = PasswordResetStatus.OTP_ON_COOLDOWN;
+            status = PasswordResetStatus.OTP_TIMEOUT_COOLDOWN;
 
             // Calculate minutes remaining
             cooldownMinsRemaining =
@@ -49,6 +49,14 @@ public class UserDto {
             status = PasswordResetStatus.INACTIVE;
           }
         }
+      }
+    }
+
+    if (user.getLastPasswordChange() != null) {
+      LocalDateTime cooldownEnd = user.getLastPasswordChange().plusDays(1);
+      if (LocalDateTime.now().isBefore(cooldownEnd)) {
+        status = PasswordResetStatus.OTP_COMPLETE_COOLDOWN;
+        cooldownMinsRemaining = TimeUtil.minutesBetween(LocalDateTime.now(), cooldownEnd);
       }
     }
 

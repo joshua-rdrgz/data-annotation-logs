@@ -142,6 +142,11 @@ public class UserServiceImpl implements UserService {
   @Override
   public EntityChangeResponse sendPasswordResetOtp(User user) {
     User managedUser = userRepository.findFirstById(user.getId());
+
+    if (isOnCompletionCooldown(managedUser)) {
+      return sendGenericErrorResponse();
+    }
+
     PasswordResetOtp existingOtp = passwordResetOtpRepository.findByUserId(managedUser.getId());
 
     // OTP exists and is NOT expired
@@ -190,6 +195,11 @@ public class UserServiceImpl implements UserService {
   public EntityChangeResponse verifyPasswordResetOtp(
       User user, PasswordResetVerifyRequest request) {
     User managedUser = userRepository.findFirstById(user.getId());
+
+    if (isOnCompletionCooldown(managedUser)) {
+      return sendGenericErrorResponse();
+    }
+
     PasswordResetOtp otp = passwordResetOtpRepository.findByUserId(managedUser.getId());
 
     // OTP doesn't exist
@@ -242,6 +252,11 @@ public class UserServiceImpl implements UserService {
   @Override
   public EntityChangeResponse changePassword(User user, PasswordChangeRequest request) {
     User managedUser = userRepository.findFirstById(user.getId());
+
+    if (isOnCompletionCooldown(managedUser)) {
+      return sendGenericErrorResponse();
+    }
+
     PasswordResetOtp otp = passwordResetOtpRepository.findByUserId(managedUser.getId());
 
     // OTP doesn't exist, or
@@ -252,6 +267,7 @@ public class UserServiceImpl implements UserService {
     }
 
     managedUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
+    managedUser.setLastPasswordChange(LocalDateTime.now());
     userRepository.save(managedUser);
     passwordResetOtpRepository.delete(otp);
 
@@ -264,6 +280,14 @@ public class UserServiceImpl implements UserService {
 
   private String generateOtp() {
     return String.format("%06d", new SecureRandom().nextInt(1000000));
+  }
+
+  private boolean isOnCompletionCooldown(User user) {
+    if (user.getLastPasswordChange() != null) {
+      LocalDateTime cooldownEnd = user.getLastPasswordChange().plusDays(1);
+      return LocalDateTime.now().isBefore(cooldownEnd);
+    }
+    return false;
   }
 
   private EntityChangeResponse sendGenericErrorResponse() {

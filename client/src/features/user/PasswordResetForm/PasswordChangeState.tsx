@@ -1,11 +1,12 @@
-import React from 'react';
+import { PasswordResetTestIds } from '@/features/user/testIds';
 import { useChangePassword } from '@/features/user/useChangePassword';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/ui/button';
 import * as F from '@/ui/form';
 import { Input } from '@/ui/input';
+import { zodResolver } from '@hookform/resolvers/zod';
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
 const ChangePasswordSchema = z
   .object({
@@ -42,7 +43,11 @@ export const PasswordChangeState: React.FC = () => {
               <F.Message />
             </div>
             <F.Control>
-              <Input type='password' {...field} />
+              <Input
+                type='password'
+                {...field}
+                data-testid={PasswordResetTestIds.NewPasswordInput}
+              />
             </F.Control>
           </F.Item>
         )}
@@ -57,7 +62,11 @@ export const PasswordChangeState: React.FC = () => {
               <F.Message />
             </div>
             <F.Control>
-              <Input type='password' {...field} />
+              <Input
+                type='password'
+                {...field}
+                data-testid={PasswordResetTestIds.ConfirmPasswordInput}
+              />
             </F.Control>
           </F.Item>
         )}
@@ -66,6 +75,7 @@ export const PasswordChangeState: React.FC = () => {
         type='submit'
         disabled={isPending || !form.formState.isValid}
         className='w-full text-center'
+        data-testid={PasswordResetTestIds.ChangePasswordButton}
       >
         {isPending ? 'Changing Password...' : 'Change Password'}
       </Button>

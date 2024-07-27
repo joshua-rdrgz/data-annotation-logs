@@ -10,3 +10,13 @@ export enum CancelEmailResetTestIds {
   CancelCancelEmailChangeButton = 'cancel-cancel-email-change-button',
   CancelEmailChangeDialog = 'cancel-email-change-dialog',
 }
+
+export enum PasswordResetTestIds {
+  InitiateButton = 'initiate-password-reset-button',
+  OtpInput = 'password-reset-otp-input',
+  OtpVerifyButton = 'password-reset-otp-verify-button',
+  NewPasswordInput = 'new-password-input',
+  ConfirmPasswordInput = 'confirm-password-input',
+  ChangePasswordButton = 'change-password-button',
+  CooldownWarning = 'password-reset-cooldown-warning',
+}

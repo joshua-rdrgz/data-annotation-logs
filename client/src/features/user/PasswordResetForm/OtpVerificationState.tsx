@@ -1,11 +1,12 @@
-import React from 'react';
+import { PasswordResetTestIds } from '@/features/user/testIds';
 import { useVerifyPasswordResetOtp } from '@/features/user/useVerifyPasswordResetOtp';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/ui/button';
-import * as OTP from '@/ui/input-otp';
 import * as F from '@/ui/form';
+import * as OTP from '@/ui/input-otp';
+import { zodResolver } from '@hookform/resolvers/zod';
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
 const PasswordResetOtpSchema = z.object({
   otp: z.string().length(6, { message: 'OTP must be 6 digits' }),
@@ -47,6 +48,7 @@ export const OtpVerificationState: React.FC = () => {
                 value={field.value}
                 onChange={field.onChange}
                 maxLength={6}
+                data-testid={PasswordResetTestIds.OtpInput}
               >
                 <OTP.Group className='gap-2'>
                   {[0, 1, 2, 3, 4, 5].map((index) => (
@@ -68,6 +70,7 @@ export const OtpVerificationState: React.FC = () => {
         type='submit'
         disabled={otpInputSatisfied || isPending}
         className='w-full text-center'
+        data-testid={PasswordResetTestIds.OtpVerifyButton}
       >
         {isPending ? 'Verifying OTP...' : 'Verify OTP'}
       </Button>

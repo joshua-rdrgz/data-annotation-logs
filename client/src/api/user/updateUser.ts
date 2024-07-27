@@ -1,12 +1,12 @@
 import { request } from '@/api/request';
-import { UserDTO } from '@/api/user/types';
+import { UserDto } from '@/api/user/types';
 
 /**
  * Function for updating the current User's trivial attributes.
- * @param data UserDTO, the data to send over
- * @returns UserDTO, the data received
+ * @param data UserDto, the data to send over
+ * @returns UserDto, the data received
  */
-export const updateUser = (data: Omit<UserDTO, 'email'>): Promise<UserDTO> => {
+export const updateUser = (data: Omit<UserDto, 'email'>): Promise<UserDto> => {
   return request({
     method: 'PUT',
     url: '/api/v1/users/me',

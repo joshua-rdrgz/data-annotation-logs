@@ -1,4 +1,4 @@
-import { UserDTO } from '@/api/user/types';
+import { UserDto } from '@/api/user/types';
 import { updateUser } from '@/api/user/updateUser';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
@@ -10,9 +10,9 @@ export const useUpdateUser = () => {
   const queryClient = useQueryClient();
 
   return useMutation<
-    UserDTO,
+    UserDto,
     AxiosError<ErrorResponse>,
-    Omit<UserDTO, 'email'>
+    Omit<UserDto, 'email'>
   >({
     mutationFn: updateUser,
     onSuccess: () => {

@@ -58,6 +58,9 @@ public class User {
   @Column(name = "last_updated_at", nullable = false)
   private LocalDateTime lastUpdatedAt;
 
+  @Column(name = "last_password_change")
+  private LocalDateTime lastPasswordChange;
+
   /** PrePersist. */
   @PrePersist
   public void prePersist() {

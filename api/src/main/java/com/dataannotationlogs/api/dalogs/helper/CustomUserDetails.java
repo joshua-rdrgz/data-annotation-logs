@@ -25,7 +25,8 @@ public class CustomUserDetails extends User implements UserDetails {
         user.getPassword(),
         user.isVerified(),
         user.getCreatedAt(),
-        user.getLastUpdatedAt());
+        user.getLastUpdatedAt(),
+        user.getLastPasswordChange());
     this.authorities = new ArrayList<>();
   }
 

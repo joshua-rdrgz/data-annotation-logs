@@ -1,4 +1,4 @@
-import { UserDTO } from '@/api/user/types';
+import { UserDto } from '@/api/user/types';
 import { useUpdateUser } from '@/features/user/useUpdateUser';
 import { useUser } from '@/features/user/useUser';
 import { ComponentLoader } from '@/ui/ComponentLoader';
@@ -47,7 +47,7 @@ export const BaseUserSettingsForm = () => {
     form.watch('lastName') === user?.lastName;
 
   const onSubmit = (data: UserSettings) => {
-    updateMe(data as Omit<UserDTO, 'email'>);
+    updateMe(data as Omit<UserDto, 'email'>);
   };
 
   if (isUserPending) {

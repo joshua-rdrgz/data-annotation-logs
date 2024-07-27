@@ -7,6 +7,7 @@ import {
   CancelEmailResetTestIds,
   UserEmailSettingsFormTestIds,
 } from './testIds';
+import { WarningBox } from '@/ui/WarningBox';
 
 interface CancelEmailResetProps {
   onCancelSuccess: () => void;
@@ -29,8 +30,7 @@ export const CancelEmailReset: React.FC<CancelEmailResetProps> = ({
   };
 
   return (
-    <div
-      className='mb-4 p-2 bg-yellow-100 text-yellow-800 rounded'
+    <WarningBox
       data-testid={UserEmailSettingsFormTestIds.PendingEmailChangeNotification}
     >
       Please verify the new email address{' '}
@@ -80,6 +80,6 @@ export const CancelEmailReset: React.FC<CancelEmailResetProps> = ({
           </AD.Footer>
         </AD.Content>
       </AD.Root>
-    </div>
+    </WarningBox>
   );
 };

@@ -1,10 +1,10 @@
-import { UserDTO } from '../../src/api/user/types';
+import { UserDto } from '../../src/api/user/types';
 
 describe('Basic Info Form', () => {
-  let userData: UserDTO;
+  let userData: UserDto;
 
   beforeEach(() => {
-    cy.fixture<UserDTO>('user').then((fixtureData) => {
+    cy.fixture<UserDto>('user').then((fixtureData) => {
       userData = fixtureData;
       cy.intercept('GET', '/api/v1/users/me', { body: userData }).as('getUser');
     });

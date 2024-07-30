@@ -30,16 +30,9 @@ public class UnverifiedUserCleanupTask {
 
       if (createdAt.isBefore(thresholdDate)) {
         userRepository.delete(user);
-        emailService.sendEmail(
-            user.getEmail(),
-            "Account Deleted",
-            "Your account has been deleted due to inactivity. Please sign up again to continue"
-                + " using the platform.");
+        emailService.sendAccountDeletedEmail(user.getEmail());
       } else if (createdAt.isBefore(reminderThresholdDate)) {
-        emailService.sendEmail(
-            user.getEmail(),
-            "Account Verification Reminder",
-            "Please verify your account within the next 7 days to avoid account deletion.");
+        emailService.sendAccountVerificationReminderEmail(user.getEmail());
       }
     }
   }

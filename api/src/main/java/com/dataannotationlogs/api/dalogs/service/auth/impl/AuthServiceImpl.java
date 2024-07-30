@@ -85,8 +85,7 @@ public class AuthServiceImpl implements AuthService {
     verificationTokenRepository.save(verificationToken);
 
     // 3. Send User Verification Email
-    emailService.sendEmail(
-        user.getEmail(), "Verify Your Account", createVerificationEmail(user, token));
+    emailService.sendAccountVerificationEmail(user, token);
 
     return EntityChangeResponse.builder()
         .statusCode(HttpStatusCode.valueOf(201))
@@ -183,8 +182,7 @@ public class AuthServiceImpl implements AuthService {
       String token = verificationTokenPair.getSecond();
       verificationTokenRepository.save(verificationToken);
 
-      emailService.sendEmail(
-          user.getEmail(), "Verify Your Account", createVerificationEmail(user, token));
+      emailService.sendAccountVerificationEmail(user, token);
     }
 
     return EntityChangeResponse.builder()
@@ -208,11 +206,5 @@ public class AuthServiceImpl implements AuthService {
             .build();
 
     return Pair.of(verificationToken, token);
-  }
-
-  private String createVerificationEmail(User user, String token) {
-    String verificationLink =
-        "https://localhost:5173/verify?token=" + token + "&userId=" + user.getId();
-    return "Please click the following link to verify your account: " + verificationLink;
   }
 }

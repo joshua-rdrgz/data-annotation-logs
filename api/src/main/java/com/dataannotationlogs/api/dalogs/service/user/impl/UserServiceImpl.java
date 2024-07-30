@@ -84,12 +84,7 @@ public class UserServiceImpl implements UserService {
 
     emailResetTokenRepository.save(emailResetToken);
 
-    String verificationLink =
-        "http://localhost:5173/verify-email-change?token="
-            + token
-            + "&userId="
-            + managedUser.getId();
-    emailService.sendEmail(emailReset.getEmail(), "Email Reset Verification", verificationLink);
+    emailService.sendEmailChangeEmail(emailReset.getEmail(), token, managedUser.getId());
 
     return EntityChangeResponse.builder()
         .statusCode(HttpStatusCode.valueOf(200))
@@ -182,7 +177,7 @@ public class UserServiceImpl implements UserService {
             .build();
 
     passwordResetOtpRepository.save(passwordResetOtp);
-    emailService.sendEmail(managedUser.getEmail(), "Password Reset OTP", "Your OTP is: " + otp);
+    emailService.sendPasswordResetOtpEmail(managedUser.getEmail(), otp);
 
     return EntityChangeResponse.builder()
         .statusCode(HttpStatusCode.valueOf(200))

@@ -35,6 +35,10 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-mail</artifactId>
 		</dependency>
+		<dependency>
+    	<groupId>org.springframework.boot</groupId>
+    	<artifactId>spring-boot-starter-thymeleaf</artifactId>
+		</dependency>
 
 		<dependency>
   		<groupId>me.paulschwarz</groupId>
@@ -97,6 +101,12 @@
 				<artifactId>greenmail-junit5</artifactId>
 				<version>2.0.1</version>
 				<scope>test</scope>
+		</dependency>
+		<dependency>
+    	<groupId>org.jsoup</groupId>
+    	<artifactId>jsoup</artifactId>
+    	<version>1.15.3</version>
+    	<scope>test</scope>
 		</dependency>
 	</dependencies>
 
